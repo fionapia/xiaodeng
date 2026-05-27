@@ -191,14 +191,11 @@ body {
   -webkit-appearance:none;
 }
 .input-date:focus { border-color:var(--pink-light); }
-.date-row {
-  position:relative; margin-bottom:6px; cursor:pointer;
-  background:#fefafc; border:1.5px solid var(--border); border-radius:12px;
-  padding:10px; font-size:14px; color:var(--text);
-  display:flex; align-items:center;
+.date-plain {
+  position:relative; text-align:center; margin-bottom:8px; font-size:12px;
+  color:var(--text-secondary); cursor:pointer; padding:2px 0;
 }
-.date-row::after { content:'📅'; font-size:14px; margin-left:auto; }
-.date-row input[type=date] {
+.date-plain input[type=date] {
   position:absolute; inset:0; opacity:0; width:100%; cursor:pointer;
 }
 .input-note {
@@ -375,17 +372,16 @@ body {
   </div>
 
   <div class="card" style="padding:14px">
+    <div class="date-plain" id="date-plain">
+      <span id="date-display"></span>
+      <input class="input-date" id="input-date" type="date">
+    </div>
     <div class="categories" id="categories">
       <span class="cat-btn food selected" data-cat="food">🍜 吃吃</span>
       <span class="cat-btn transport" data-cat="transport">🚗 出行</span>
       <span class="cat-btn shopping" data-cat="shopping">🛍 买买</span>
       <span class="cat-btn play" data-cat="play">🎮 玩玩</span>
-
       <span class="cat-btn other" data-cat="other">📦 其他</span>
-    </div>
-    <div class="date-row" id="date-row">
-      <span id="date-display"></span>
-      <input class="input-date" id="input-date" type="date">
     </div>
     <input class="input-amount" id="input-amount" type="number" placeholder="花了多少呀～" inputmode="decimal" autofocus>
     <input class="input-note" id="input-note" placeholder="记点什么..." maxlength="30" style="margin-bottom:8px;">
