@@ -191,14 +191,16 @@ body {
   -webkit-appearance:none;
 }
 .input-date:focus { border-color:var(--pink-light); }
-.btn-mic {
-  width:44px; height:44px; border-radius:12px; border:1.5px solid var(--border);
-  background:#fefafc; font-size:20px; cursor:pointer; flex-shrink:0;
-  transition:all 0.15s; display:flex; align-items:center; justify-content:center;
+.date-row {
+  position:relative; margin-bottom:6px; cursor:pointer;
+  background:#fefafc; border:1.5px solid var(--border); border-radius:12px;
+  padding:10px; font-size:14px; color:var(--text);
+  display:flex; align-items:center;
 }
-.btn-mic:active { background:#fdf0f5; }
-.btn-mic.listening { background:var(--pink); border-color:var(--pink); animation:pulse-mic 0.8s infinite; }
-@keyframes pulse-mic { 0%,100%{box-shadow:0 0 0 0 rgba(219,112,147,0.4)} 50%{box-shadow:0 0 0 8px rgba(219,112,147,0)} }
+.date-row::after { content:'📅'; font-size:14px; margin-left:auto; }
+.date-row input[type=date] {
+  position:absolute; inset:0; opacity:0; width:100%; cursor:pointer;
+}
 .input-note {
   width:100%; background:#fefafc; border:1.5px solid var(--border);
   border-radius:12px; padding:8px; color:var(--text); font-size:12px;
@@ -381,11 +383,11 @@ body {
 
       <span class="cat-btn other" data-cat="other">📦 其他</span>
     </div>
-    <input class="input-date" id="input-date" type="date">
-    <div style="display:flex;gap:6px;margin-bottom:6px;">
-      <input class="input-amount" id="input-amount" type="number" placeholder="花了多少呀～" inputmode="decimal" autofocus style="flex:1;margin-bottom:0;">
-      <button class="btn-mic" id="btn-mic" type="button" title="语音输入">🎤</button>
+    <div class="date-row" id="date-row">
+      <span id="date-display"></span>
+      <input class="input-date" id="input-date" type="date">
     </div>
+    <input class="input-amount" id="input-amount" type="number" placeholder="花了多少呀～" inputmode="decimal" autofocus>
     <input class="input-note" id="input-note" placeholder="记点什么..." maxlength="30" style="margin-bottom:8px;">
     <button class="btn-submit" id="btn-submit">💡 点亮</button>
   </div>
@@ -972,103 +974,9 @@ async function addTransactionOnDate(amount, category, note, date) {
   showToast('💡 点亮啦~');
 }
 
-// Voice input
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let isListening = false;
-
-function initSpeech() {
-  if (!SpeechRecognition) { $('#btn-mic').style.display = 'none'; return; }
-  recognition = new SpeechRecognition();
-  recognition.lang = 'zh-CN';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  recognition.onresult = (e) => {
-    const text = e.results[0][0].transcript.trim();
-    parseVoiceInput(text);
-    stopListening();
-  };
-
-  recognition.onerror = () => {
-    stopListening();
-    showToast('没听清，再说一次～');
-  };
-
-  recognition.onend = () => stopListening();
-}
-
-function startListening() {
-  if (!recognition) return;
-  isListening = true;
-  $('#btn-mic').classList.add('listening');
-  $('#btn-mic').textContent = '🔴';
-  recognition.start();
-}
-
-function stopListening() {
-  isListening = false;
-  $('#btn-mic').classList.remove('listening');
-  $('#btn-mic').textContent = '🎤';
-  try { recognition.stop(); } catch(e) {}
-}
-
-function parseVoiceInput(text) {
-  // Extract amount: numbers like 35, 35块, 35元, 三十五, 三十五块
-  let amount = null;
-  // Try Arabic numerals
-  const numMatch = text.match(/(\d+(?:\.\d+)?)\s*[块元]?/);
-  if (numMatch) amount = parseFloat(numMatch[1]);
-
-  // Try Chinese numerals (simple)
-  const cnNums = { '一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,
-    '百':100,'千':1000,'万':10000,'零':0,'１':1,'２':2,'３':3,'４':4,'５':5,'６':6,'７':7,'８':8,'９':9,'０':0 };
-  if (!amount) {
-    let cnMatch = text.match(/[一两二三四五六七八九十百千万零]+[块元]?/);
-    if (cnMatch) {
-      let s = cnMatch[0].replace(/[块元]/,'');
-      let val = 0, tmp = 0;
-      for (let c of s) {
-        let n = cnNums[c] || 0;
-        if (n >= 10) { tmp = (tmp || 1) * n; val += tmp; tmp = 0; }
-        else tmp = n;
-      }
-      amount = val + tmp;
-    }
-  }
-
-  if (!amount || amount <= 0 || amount > 99999) {
-    showToast('没听出金额～请手动输入');
-    return;
-  }
-
-  // Guess category from keywords
-  let cat = selectedCat;
-  const kw = {
-    food: ['吃','饭','餐','面','米','粉','菜','肉','鸡','鱼','虾','汤','火锅','烧烤','奶茶','咖啡','茶','饮料','水果','面包','蛋糕','甜品','零食','外卖','食堂','餐厅','馆','酒'],
-    transport: ['车','地铁','公交','打车','出行','行','油','费','停车','高铁','火车','飞机','票','骑','共享','滴滴','出租车'],
-    shopping: ['买','购','衣服','鞋','包','化妆品','护肤','手机','电脑','书','快递','淘宝','京东','拼多多','超市','商场','裙','裤','饰','逛'],
-    play: ['玩','游戏','电影','唱','歌','K','旅','游','景','门票','剧','展','健身','运动','球','游泳','乐','娱乐'],
-  };
-  for (let [k, words] of Object.entries(kw)) {
-    if (words.some(w => text.includes(w))) { cat = k; break; }
-  }
-
-  // Extract note: text without amount words
-  let note = text.replace(/[一二两三四五六七八九十百千万零\d]+\.?\d*\s*[块元钱]?/,'').trim();
-  if (!note) note = '';
-
-  $('#input-amount').value = amount;
-  $('#input-note').value = note;
-  selectedCat = cat;
-  renderCatButtons();
-  showToast('听到了：' + CATS[cat].emoji + ' ¥' + amount + (note ? ' ' + note : ''));
-}
-
-$('#btn-mic').addEventListener('click', () => {
-  if (isListening) { stopListening(); return; }
-  startListening();
-  showToast('正在听...');
+// Update date display when date changes
+$('#input-date').addEventListener('change', () => {
+  $('#date-display').textContent = formatDate($('#input-date').value || todayStr());
 });
 
 // Enter key submits
@@ -1305,8 +1213,8 @@ async function init() {
   $('#budget-input').value = budget;
   $('#today-date').textContent = formatDate(todayStr());
   renderAll();
-  initSpeech();
   $('#input-date').value = todayStr();
+  $('#date-display').textContent = formatDate(todayStr());
   $('#input-amount').focus();
 
   // Auto-refresh at midnight
