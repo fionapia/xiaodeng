@@ -49,7 +49,22 @@ body {
 .header {
   display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;
 }
-.header-title { font-weight:700; font-size:18px; color:var(--pink-dark); }
+.header-title { font-weight:700; font-size:18px; color:var(--pink-dark); display:flex; align-items:center; gap:6px; }
+.logo-lamp { position:relative; display:inline-block; width:22px; height:24px; flex-shrink:0; }
+.logo-bulb {
+  position:absolute; bottom:4px; left:50%; transform:translateX(-50%);
+  width:14px; height:13px; background:linear-gradient(180deg,#ffd0dd,#ffb6c8);
+  border-radius:12px 12px 4px 4px;
+}
+.logo-base {
+  position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:10px; height:5px; background:#c9708a; border-radius:2px 2px 4px 4px;
+}
+.logo-flame {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:5px; height:7px; background:linear-gradient(180deg,#fff8d0,#ffd700);
+  border-radius:3px; box-shadow:0 0 6px rgba(255,215,0,0.5);
+}
 .streak-badge {
   background:#f5e5f0; color:var(--pink-dark); padding:4px 12px; border-radius:14px;
   font-size:11px; font-weight:600;
@@ -312,7 +327,14 @@ body {
 <!-- SCREEN: HOME -->
 <div class="screen active" id="screen-home">
   <div class="header">
-    <span class="header-title">💡 小灯记账</span>
+    <span class="header-title">
+      <span class="logo-lamp">
+        <span class="logo-flame"></span>
+        <span class="logo-bulb"></span>
+        <span class="logo-base"></span>
+      </span>
+      小灯记账
+    </span>
     <span class="streak-badge" id="streak-badge">🔥 0天</span>
   </div>
 
