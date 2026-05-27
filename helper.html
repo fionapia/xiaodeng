@@ -28,6 +28,12 @@
     "category": "transport",
     "note": "打车",
     "date": "2026-05-28"
+  },
+  {
+    "amount": 9.9,
+    "category": "food",
+    "note": "喝咖啡",
+    "date": "2026-05-28"
   }
 ]</textarea>
 
@@ -59,9 +65,26 @@ async function importData() {
     if (!Array.isArray(records)) { r.innerHTML = '<p class="error">数据必须是数组格式喵~</p>'; return; }
 
     const db = await openDB();
+
+    // Check existing records for duplicates
+    const existing = await new Promise((resolve) => {
+      const t = db.transaction('tx','readonly');
+      const req = t.objectStore('tx').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+
     let count = 0;
+    let skipped = 0;
     for (const rec of records) {
       if (!rec.amount || !rec.category || !rec.date) continue;
+
+      // Skip duplicate
+      const isDup = existing.some(e =>
+        e.date === rec.date && e.amount === parseFloat(rec.amount) && e.note === (rec.note || '')
+      );
+      if (isDup) { skipped++; continue; }
+
       const tx = {
         id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2),
         amount: parseFloat(rec.amount),
@@ -79,7 +102,7 @@ async function importData() {
       count++;
     }
     db.close();
-    r.innerHTML = '<p class="success">导入成功！共 ' + count + ' 条记录喵~<br>打开小灯记账就能看到了 🎉</p>';
+    r.innerHTML = '<p class="success">导入成功！新增 ' + count + ' 条' + (skipped > 0 ? '，跳过 ' + skipped + ' 条重复' : '') + ' 喵~<br>打开小灯记账就能看到了 🎉</p>';
   } catch(e) {
     r.innerHTML = '<p class="error">出错了喵：' + e.message + '</p>';
   }
