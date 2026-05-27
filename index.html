@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="小灯记账">
+<meta name="theme-color" content="#fff3f8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='g'><stop offset='0%' stop-color='%23f5d0e8'/><stop offset='100%' stop-color='%23e8c0f0'/></radialGradient></defs><circle cx='50' cy='48' r='42' fill='url(%23g)'/><circle cx='40' cy='38' r='5' fill='white'/><circle cx='60' cy='38' r='5' fill='white'/><ellipse cx='50' cy='50' rx='10' ry='7' fill='white' opacity='0.8'/><circle cx='58' cy='8' r='6' fill='%23ffeaa0'/><text x='70' y='10' font-size='14'>✨</text></svg>">
+<title>小灯记账</title>
+<style>
+:root {
+  --bg: #fff3f8;
+  --card: #ffffff;
+  --pink: #db7093;
+  --pink-dark: #c9708a;
+  --pink-light: #f0a8be;
+  --purple: #9880c0;
+  --purple-dark: #8068b0;
+  --purple-light: #d8c8e8;
+  --text: #785060;
+  --text-secondary: #b898a8;
+  --text-muted: #c8b0b8;
+  --border: #f0d4de;
+  --green: #80a898;
+  --orange: #d09080;
+  --shadow: 0 2px 12px rgba(200,140,170,0.07);
+  --shadow-sm: 0 1px 4px rgba(200,140,170,0.04);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.app { max-width:420px; margin:0 auto; padding:16px 16px 80px; min-height:100dvh; }
+.screen { display:none; }
+.screen.active { display:block; animation: fadeIn 0.2s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.header {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;
+}
+.header-title { font-weight:700; font-size:18px; color:var(--pink-dark); }
+.streak-badge {
+  background:#f5e5f0; color:var(--pink-dark); padding:4px 12px; border-radius:14px;
+  font-size:11px; font-weight:600;
+}
+
+.card {
+  background:var(--card); border-radius:18px; padding:16px;
+  box-shadow:var(--shadow); margin-bottom:10px;
+}
+
+/* Blob */
+.blob-wrap { text-align:center; padding:4px 0 8px; position:relative; }
+.blob {
+  display:inline-block; width:60px; height:60px; border-radius:50%;
+  transition: background 0.5s, box-shadow 0.5s;
+  position:relative; vertical-align:top;
+}
+.blob-eyes { position:absolute; top:14px; width:100%; display:flex; justify-content:center; gap:20px; }
+.blob-eye {
+  width:6px; height:6px; border-radius:50%; transition: all 0.3s;
+}
+.blob-mouth {
+  position:absolute; top:24px; left:50%; transform:translateX(-50%);
+  transition: all 0.3s;
+}
+.blob-blush-l { position:absolute; bottom:14px; left:10px; width:5px; height:5px; border-radius:50%; }
+.blob-blush-r { position:absolute; bottom:12px; right:12px; width:4px; height:4px; border-radius:50%; }
+.blob-sparkle { position:absolute; top:-8px; right:0; font-size:14px; }
+
+/* Blob states */
+.blob.state-sleepy { background:linear-gradient(135deg,#e8e0f0,#e0d8e8); box-shadow:0 0 16px rgba(200,180,200,0.3); }
+.blob.state-sleepy .blob-eye { width:5px; height:10px; background:#c0b8c8; border-radius:3px; }
+.blob.state-sleepy .blob-mouth { width:8px; height:8px; background:#c8c0d0; border-radius:50%; }
+.blob.state-sleepy .blob-blush-l,.blob.state-sleepy .blob-blush-r { display:none; }
+
+.blob.state-great { background:linear-gradient(135deg,#d0f0e0,#c0e8d8); box-shadow:0 0 28px rgba(160,220,180,0.5),0 0 52px rgba(160,220,180,0.2); }
+.blob.state-great .blob-eye { width:6px; height:6px; background:#4a8a6a; }
+.blob.state-great .blob-mouth { width:14px; height:7px; background:#4a8a6a; border-radius:0 0 7px 7px; }
+.blob.state-great .blob-blush-l { background:#b0e0c0; }
+.blob.state-great .blob-blush-r { background:#b0e0c0; }
+
+.blob.state-good { background:linear-gradient(135deg,#f5d0e8,#e8c0f0,#d8c8f0); box-shadow:0 0 28px rgba(220,160,220,0.5),0 0 52px rgba(220,160,220,0.2); }
+.blob.state-good .blob-eye { width:6px; height:6px; background:#fff; }
+.blob.state-good .blob-mouth { width:14px; height:9px; background:#fff; border-radius:7px; opacity:0.8; }
+.blob.state-good .blob-blush-l { background:#d8a0d8; }
+.blob.state-good .blob-blush-r { background:#d8a0d8; }
+
+.blob.state-warn { background:linear-gradient(135deg,#f8e0c8,#f0d0b0,#e8c8a8); box-shadow:0 0 28px rgba(240,200,160,0.5); }
+.blob.state-warn .blob-eye { width:6px; height:6px; background:#8a6a4a; }
+.blob.state-warn .blob-mouth { width:8px; height:8px; background:#8a6a4a; border-radius:50%; }
+.blob.state-warn .blob-blush-l { background:#e8c0a0; }
+.blob.state-warn .blob-blush-r { background:#e8c0a0; }
+
+.blob.state-over { background:linear-gradient(135deg,#f0c0c8,#e8b0b8,#d8a8b0); box-shadow:0 0 24px rgba(220,160,160,0.4); }
+.blob.state-over .blob-eye { width:7px; height:7px; background:#fff; position:relative; }
+.blob.state-over .blob-mouth { width:10px; height:6px; background:#e8b0b0; border-radius:0 0 5px 5px; }
+.blob.state-over .blob-blush-l { background:#e0b0b0; }
+.blob.state-over .blob-blush-r { background:#e0b0b0; }
+
+.blob.state-over .blob-eyes::after {
+  content:''; position:absolute; top:2px; left:15px; width:6px; height:6px;
+  background:#b8d8f0; border-radius:50%;
+}
+.blob.state-over .blob-eyes::before {
+  content:''; position:absolute; top:2px; right:15px; width:6px; height:6px;
+  background:#b8d8f0; border-radius:50%;
+}
+
+.blob.state-broke { background:linear-gradient(135deg,#e8b0b8,#d89098,#c87880); box-shadow:0 0 18px rgba(200,120,130,0.4); animation:shiver 0.3s infinite; }
+.blob.state-broke .blob-eye { width:6px; height:6px; background:#fff; transform:rotate(15deg); }
+.blob.state-broke .blob-mouth { width:10px; height:6px; background:#c08080; border-radius:2px 2px 5px 5px; }
+.blob.state-broke .blob-blush-l { background:#d89090; }
+.blob.state-broke .blob-blush-r { background:#d89090; }
+@keyframes shiver { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-1.5px)} 75%{transform:translateX(1.5px)} }
+
+@keyframes blobBounce {
+  0%,100% { transform:scale(1); }
+  30% { transform:scale(1.12); }
+  60% { transform:scale(0.95); }
+}
+
+/* Balance area */
+.balance-label { font-size:11px; color:var(--text-secondary); }
+.balance-amount { font-size:32px; font-weight:800; color:var(--pink-dark); margin:2px 0; }
+.balance-hint { font-size:10px; color:var(--text-secondary); }
+.balance-bar {
+  height:6px; background:#f0dde5; border-radius:3px; margin-top:8px; overflow:hidden;
+}
+.balance-bar-fill {
+  height:100%; background:linear-gradient(90deg,var(--pink-light),var(--pink));
+  border-radius:3px; transition: width 0.5s;
+}
+
+/* Entry form */
+.categories {
+  display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px; justify-content:center;
+}
+.cat-btn {
+  padding:6px 10px; border-radius:12px; font-size:11px; border:1.5px solid transparent;
+  background:#fefafe; cursor:pointer; transition:all 0.15s; white-space:nowrap;
+}
+.cat-btn.selected { font-weight:600; }
+.cat-btn.food { border-color:#f0c8d8; color:var(--pink-dark); }
+.cat-btn.food.selected { background:#fdf0f5; }
+.cat-btn.transport { border-color:#e8d8f0; color:var(--purple); }
+.cat-btn.transport.selected { background:#fdf5ff; }
+.cat-btn.shopping { border-color:#f0ccd4; color:#d0909a; }
+.cat-btn.shopping.selected { background:#fdf0f2; }
+.cat-btn.play { border-color:#d0e8d8; color:var(--green); }
+.cat-btn.play.selected { background:#f4fdf8; }
+.cat-btn.other { border-color:#e8e0d8; color:#b0a098; }
+.cat-btn.other.selected { background:#f8f5f0; }
+
+.input-amount {
+  width:100%; background:#fefafc; border:1.5px solid var(--border);
+  border-radius:12px; padding:10px; color:var(--text); font-size:16px;
+  outline:none; margin-bottom:6px; font-family:inherit;
+}
+.input-amount:focus { border-color:var(--pink-light); }
+.input-note {
+  width:100%; background:#fefafc; border:1.5px solid var(--border);
+  border-radius:12px; padding:8px; color:var(--text); font-size:12px;
+  outline:none; margin-bottom:8px; font-family:inherit;
+}
+.input-note::placeholder { color:var(--text-muted); }
+.input-amount::placeholder { color:var(--text-muted); }
+.btn-submit {
+  width:100%; background:linear-gradient(135deg,var(--pink-light),var(--pink));
+  border:none; border-radius:14px; padding:14px; color:#fff; font-size:15px;
+  font-weight:700; box-shadow:0 3px 12px rgba(219,112,147,0.25); cursor:pointer;
+  font-family:inherit; transition:transform 0.1s;
+}
+.btn-submit:active { transform:scale(0.97); }
+
+/* Transaction list */
+.today-header {
+  font-size:11px; color:var(--text-secondary); margin-bottom:6px;
+  display:flex; justify-content:space-between;
+}
+.tx-item {
+  display:flex; align-items:center; gap:10px; padding:10px 14px;
+  background:var(--card); border-radius:14px; margin-bottom:4px;
+  font-size:13px; box-shadow:var(--shadow-sm); transition:transform 0.2s;
+}
+.tx-emoji { font-size:20px; flex-shrink:0; }
+.tx-note { flex:1; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tx-amount { color:var(--pink); font-weight:700; flex-shrink:0; }
+.tx-del { color:var(--text-muted); font-size:10px; flex-shrink:0; cursor:pointer; padding:4px; }
+.tx-swipe-hint { text-align:center; font-size:10px; color:var(--text-muted); margin-top:6px; }
+
+/* Stats */
+.month-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.month-nav-arrow { font-size:20px; color:#c0b0d0; cursor:pointer; padding:4px 8px; }
+.month-title { font-weight:700; font-size:16px; color:var(--purple-dark); }
+.stat-total { font-size:34px; font-weight:800; color:var(--purple-dark); margin:4px 0; }
+.stat-sub { font-size:10px; color:var(--text-secondary); }
+.stat-compare { display:flex; justify-content:center; gap:16px; margin-top:6px; font-size:10px; }
+.cat-bar { height:10px; border-radius:5px; overflow:hidden; display:flex; margin-bottom:10px; }
+.cat-bar-seg { transition:width 0.5s; }
+.cat-legend { display:flex; flex-wrap:wrap; gap:10px; font-size:10px; }
+.trend-chart { display:flex; align-items:flex-end; gap:3px; height:60px; }
+.trend-bar { flex:1; border-radius:3px 3px 0 0; transition:height 0.5s; }
+.trend-bar.today { background:linear-gradient(180deg,var(--pink-light),var(--pink)); }
+.trend-labels { display:flex; justify-content:space-between; font-size:8px; color:#c0b0c8; margin-top:4px; }
+
+/* Settings */
+.setting-blob-wrap { text-align:center; padding:8px 0 4px; }
+.streak-num { font-size:24px; font-weight:800; color:var(--pink-dark); margin:2px 0; }
+.streak-label { font-size:10px; color:var(--text-secondary); }
+.week-dots { display:flex; gap:5px; justify-content:center; margin-top:8px; }
+.week-dot { padding:5px 9px; border-radius:16px; font-size:9px; }
+.week-dot.done { background:#ede0f5; color:var(--purple-dark); }
+.week-dot.today { background:var(--purple-light); color:#fff; font-weight:600; }
+.week-dot.future { background:#f5f0f8; color:#d8c8e0; }
+
+.settings-section {
+  background:var(--card); border-radius:16px; padding:14px; margin-bottom:8px;
+  box-shadow:0 2px 8px rgba(150,120,180,0.05);
+}
+.settings-section-title {
+  font-size:12px; font-weight:600; color:var(--purple-dark); margin-bottom:6px;
+}
+.budget-row { display:flex; align-items:center; gap:8px; }
+.budget-input {
+  flex:1; background:#fefafe; border:1.5px solid #e8d8f0; border-radius:10px;
+  padding:8px; color:#5e4a6e; font-size:16px; outline:none; text-align:center;
+  font-weight:600; font-family:inherit;
+}
+.menu-item {
+  padding:12px 16px; font-size:12px; border-bottom:1px solid #f5eef5;
+  cursor:pointer; color:var(--text);
+}
+.menu-item:last-child { border-bottom:none; }
+.menu-item:active { background:#fdf5ff; }
+.version-info { text-align:center; font-size:9px; color:#d0c0d0; margin-top:8px; }
+
+/* Tab bar */
+.tab-bar {
+  position:fixed; bottom:0; left:0; right:0; max-width:420px; margin:0 auto;
+  display:flex; gap:10px; justify-content:center; padding:10px 16px calc(10px + env(safe-area-inset-bottom, 0));
+  background:linear-gradient(0deg, var(--bg) 60%, transparent);
+  z-index:10;
+}
+.tab-btn {
+  padding:6px 20px; border-radius:16px; font-size:11px; cursor:pointer;
+  transition:all 0.15s; color:var(--text-secondary);
+}
+.tab-btn.active { color:#fff; font-weight:600; }
+.tab-btn[data-screen="home"].active { background:var(--pink); }
+.tab-btn[data-screen="stats"].active { background:var(--purple-dark); }
+.tab-btn[data-screen="settings"].active { background:#b0a090; }
+
+/* Delete confirm overlay */
+.overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:100;
+  display:none; align-items:flex-end; justify-content:center;
+  padding-bottom:calc(40px + env(safe-area-inset-bottom, 0));
+}
+.overlay.show { display:flex; }
+.overlay-sheet {
+  background:#fff; border-radius:20px 20px 0 0; padding:20px 16px 30px;
+  width:100%; max-width:420px; text-align:center; animation:slideUp 0.25s;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.overlay-title { font-size:15px; font-weight:600; margin-bottom:6px; color:var(--text); }
+.overlay-sub { font-size:11px; color:var(--text-secondary); margin-bottom:14px; }
+.overlay-actions { display:flex; gap:10px; }
+.btn-cancel {
+  flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--border);
+  background:#fff; color:var(--text); font-size:14px; cursor:pointer; font-family:inherit;
+}
+.btn-danger {
+  flex:1; padding:12px; border-radius:12px; border:none;
+  background:#f0c0c8; color:#a05050; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+}
+
+/* Toast */
+.toast {
+  position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:200;
+  background:var(--purple-dark); color:#fff; padding:10px 20px; border-radius:12px;
+  font-size:13px; opacity:0; transition:opacity 0.25s; pointer-events:none;
+}
+.toast.show { opacity:1; }
+
+/* No data state */
+.empty-state { text-align:center; padding:30px 16px; }
+.empty-icon { font-size:48px; margin-bottom:10px; }
+.empty-text { font-size:12px; color:var(--text-secondary); }
+
+/* History date group */
+.date-group-header { font-size:11px; color:var(--text-secondary); margin:10px 0 6px; }
+.scroll-area { max-height:280px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+<!-- SCREEN: HOME -->
+<div class="screen active" id="screen-home">
+  <div class="header">
+    <span class="header-title">💡 小灯记账</span>
+    <span class="streak-badge" id="streak-badge">🔥 0天</span>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <div class="blob-wrap">
+      <div class="blob state-good" id="blob">
+        <div class="blob-eyes">
+          <div class="blob-eye"></div>
+          <div class="blob-eye"></div>
+        </div>
+        <div class="blob-mouth"></div>
+        <div class="blob-blush-l"></div>
+        <div class="blob-blush-r"></div>
+      </div>
+      <div class="blob-sparkle" id="blob-sparkle">✨</div>
+    </div>
+    <div class="balance-label" id="balance-label">五月余额</div>
+    <div class="balance-amount" id="balance-amount">¥5,000</div>
+    <div class="balance-hint" id="balance-hint">预算 ¥5,000 · 今天还没记账哦~</div>
+    <div class="balance-bar"><div class="balance-bar-fill" id="balance-bar-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="card" style="padding:14px">
+    <div class="categories" id="categories">
+      <span class="cat-btn food selected" data-cat="food">🍜 吃吃</span>
+      <span class="cat-btn transport" data-cat="transport">🚗 出行</span>
+      <span class="cat-btn shopping" data-cat="shopping">🛍 买买</span>
+      <span class="cat-btn play" data-cat="play">🎮 玩玩</span>
+
+      <span class="cat-btn other" data-cat="other">📦 其他</span>
+    </div>
+    <input class="input-amount" id="input-amount" type="number" placeholder="花了多少呀～" inputmode="decimal" autofocus>
+    <input class="input-note" id="input-note" placeholder="记点什么..." maxlength="30">
+    <button class="btn-submit" id="btn-submit">💡 点亮</button>
+  </div>
+
+  <div class="today-header">
+    <span>📅 今天 · <span id="today-date"></span></span>
+    <span id="today-total">支出 ¥0</span>
+  </div>
+  <div id="today-list"></div>
+  <div class="tx-swipe-hint" id="swipe-hint" style="display:none">← 左滑删除 · 点击编辑 →</div>
+  <div class="empty-state" id="empty-today">
+    <div class="empty-icon">🌸</div>
+    <div class="empty-text">今天还没记账~<br/>记一笔让小灯亮起来吧</div>
+  </div>
+</div>
+
+<!-- SCREEN: STATS -->
+<div class="screen" id="screen-stats">
+  <div class="month-nav">
+    <span class="month-nav-arrow" id="prev-month">◀</span>
+    <span class="month-title" id="stats-month">2026年5月</span>
+    <span class="month-nav-arrow" id="next-month">▶</span>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <div class="stat-sub">本月总支出</div>
+    <div class="stat-total" id="stat-total">¥0</div>
+    <div class="stat-sub" id="stat-detail">0 笔 · 日均 ¥0</div>
+    <div class="stat-compare" id="stat-compare"></div>
+  </div>
+
+  <div class="card" id="cat-card">
+    <div class="settings-section-title">📊 支出分类</div>
+    <div class="cat-bar" id="cat-bar"></div>
+    <div class="cat-legend" id="cat-legend"></div>
+  </div>
+
+  <div class="card" id="trend-card">
+    <div class="settings-section-title">📈 日支出趋势</div>
+    <div class="trend-chart" id="trend-chart"></div>
+    <div class="trend-labels" id="trend-labels"></div>
+  </div>
+
+  <div class="empty-state" id="empty-stats" style="display:none">
+    <div class="empty-icon">📊</div>
+    <div class="empty-text">这个月还没有记录</div>
+  </div>
+</div>
+
+<!-- SCREEN: SETTINGS -->
+<div class="screen" id="screen-settings">
+  <div class="setting-blob-wrap">
+    <div class="blob state-good" style="width:64px;height:64px;margin:0 auto 8px;">
+      <div class="blob-eyes" style="top:16px"><div class="blob-eye" style="width:7px;height:7px;background:#fff"></div><div class="blob-eye" style="width:7px;height:7px;background:#fff"></div></div>
+      <div class="blob-mouth" style="top:28px;width:16px;height:12px;background:#fff;border-radius:8px;"></div>
+      <div class="blob-blush-l" style="bottom:16px;left:12px;width:6px;height:6px;background:#d8a0d8;"></div>
+      <div class="blob-blush-r" style="bottom:14px;right:14px;width:5px;height:5px;background:#d8a0d8;"></div>
+    </div>
+    <div style="font-size:12px;color:var(--pink-dark);font-weight:600;">小灯陪你记账</div>
+    <div class="streak-num" id="settings-streak">0</div>
+    <div class="streak-label">连续打卡天数 🔥</div>
+    <div class="week-dots" id="week-dots"></div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">💳 月度预算</div>
+    <div class="budget-row">
+      <span style="font-size:14px;color:var(--text-secondary)">¥</span>
+      <input class="budget-input" id="budget-input" type="number" value="5000">
+    </div>
+  </div>
+
+  <div class="settings-section" style="padding:4px 0">
+    <div class="menu-item" id="menu-cats">📋 分类管理</div>
+    <div class="menu-item" id="menu-export">📤 导出数据 CSV</div>
+    <div class="menu-item" id="menu-clear">🗑 清除所有数据</div>
+    <div class="menu-item" id="menu-about">ℹ️ 关于小灯记账</div>
+  </div>
+
+  <div class="version-info">v1.0 · 数据仅保存在你的手机里 🛡</div>
+</div>
+
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <span class="tab-btn active" data-screen="home">💰 记账</span>
+  <span class="tab-btn" data-screen="stats">📊 统计</span>
+  <span class="tab-btn" data-screen="settings">⚙️ 设置</span>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="overlay" id="delete-overlay">
+  <div class="overlay-sheet">
+    <div class="overlay-title">确定删除这条记录吗？</div>
+    <div class="overlay-sub" id="delete-desc"></div>
+    <div class="overlay-actions">
+      <button class="btn-cancel" id="delete-cancel">取消</button>
+      <button class="btn-danger" id="delete-confirm">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY EDITOR -->
+<div class="overlay" id="cat-overlay">
+  <div class="overlay-sheet">
+    <div class="overlay-title">📋 分类管理</div>
+    <div class="overlay-sub">修改 emoji 或名称，也可以新增自己的分类</div>
+    <div id="cat-edit-list" style="text-align:left;margin-bottom:8px;max-height:360px;overflow-y:auto;"></div>
+    <button class="btn-submit" id="cat-add" style="margin-bottom:8px;background:linear-gradient(135deg,#d8c8e8,#9880c0);box-shadow:none;">＋ 新增分类</button>
+    <button class="btn-cancel" id="cat-done" style="width:100%">完成</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ── Constants ──
+const DEFAULT_CATS = {
+  food:   { emoji:'🍜', label:'吃吃', color:'#e8c0d8', builtin:true },
+  transport:{ emoji:'🚗', label:'出行', color:'#c0c8f0', builtin:true },
+  shopping:{ emoji:'🛍', label:'买买', color:'#e8c0d0', builtin:true },
+  play:   { emoji:'🎮', label:'玩玩', color:'#c0e8d0', builtin:true },
+  other:  { emoji:'📦', label:'其他', color:'#e0d8d0', builtin:true },
+};
+const CAT_COLORS = ['#e8c0d8','#c0c8f0','#e8c0d0','#c0e8d0','#d8c8e8','#f0d8c0','#c8d8e8','#e8d8c8','#d0c8e0','#e0d0d8'];
+
+let CATS = {...DEFAULT_CATS};
+function rebuildCatKeys() { return Object.keys(CATS); }
+let CAT_KEYS = rebuildCatKeys();
+const DEFAULT_BUDGET = 5000;
+
+// ── State ──
+let currentScreen = 'home';
+let selectedCat = 'food';
+let budget = DEFAULT_BUDGET;
+let transactions = [];
+let statsMonth = ''; // YYYY-MM
+let pendingDeleteId = null;
+
+// ── DOM refs ──
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+// ── IndexedDB ──
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('xiaodeng', 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('tx')) {
+        db.createObjectStore('tx', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('settings')) {
+        db.createObjectStore('settings', { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbGetAll(db) {
+  return new Promise((resolve) => {
+    const tx = db.transaction('tx', 'readonly');
+    const store = tx.objectStore('tx');
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+  });
+}
+
+function dbPut(db, item) {
+  return new Promise((resolve) => {
+    const tx = db.transaction('tx', 'readwrite');
+    tx.objectStore('tx').put(item);
+    tx.oncomplete = () => resolve();
+  });
+}
+
+function dbDelete(db, id) {
+  return new Promise((resolve) => {
+    const tx = db.transaction('tx', 'readwrite');
+    tx.objectStore('tx').delete(id);
+    tx.oncomplete = () => resolve();
+  });
+}
+
+function dbGetSettings(db) {
+  return new Promise((resolve) => {
+    const tx = db.transaction('settings', 'readonly');
+    const req = tx.objectStore('settings').get('budget');
+    req.onsuccess = () => resolve(req.result ? req.result.value : DEFAULT_BUDGET);
+  });
+}
+
+function dbPutSettings(db, key, value) {
+  return new Promise((resolve) => {
+    const tx = db.transaction('settings', 'readwrite');
+    tx.objectStore('settings').put({ key, value });
+    tx.oncomplete = () => resolve();
+  });
+}
+
+// ── Helpers ──
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function monthStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function formatDate(dateStr) {
+  const parts = dateStr.split('-');
+  return `${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+}
+
+function fmt(n) { return n.toLocaleString('zh-CN', {minimumFractionDigits:2}); }
+
+function uuid() { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+// ── Blob State ──
+function getBlobState(usageRatio, hasRecordedToday) {
+  if (!hasRecordedToday) return 'sleepy';
+  if (usageRatio < 0.3) return 'great';
+  if (usageRatio < 0.6) return 'good';
+  if (usageRatio < 0.85) return 'warn';
+  if (usageRatio < 1.0) return 'over';
+  return 'broke';
+}
+
+const blobLabels = { sleepy:'还没记账 😴', great:'今天好省！🌟', good:'一切正常 ✨', warn:'注意预算 😟', over:'快超支了 💧', broke:'已经超了 😭' };
+const blobsParkles = { sleepy:'💤', great:'🌟', good:'✨', warn:'😟', over:'💧', broke:'😭' };
+
+function updateBlob(state) {
+  const blob = $('#blob');
+  const sparkle = $('#blob-sparkle');
+  blob.className = 'blob state-' + state;
+  sparkle.textContent = blobsParkles[state];
+}
+
+// ── Render ──
+function renderAll() {
+  renderHome();
+  renderStats();
+  renderSettings();
+  renderTabBar();
+}
+
+function renderHome() {
+  const today = todayStr();
+  const todayTxs = transactions.filter(t => t.date === today);
+  const monthTxs = transactions.filter(t => t.date.startsWith(monthStr(new Date())));
+  const monthSpent = monthTxs.reduce((s,t) => s + t.amount, 0);
+  const usageRatio = budget > 0 ? monthSpent / budget : 0;
+  const remaining = budget - monthSpent;
+  const hasRecordedToday = todayTxs.length > 0;
+  const state = getBlobState(usageRatio, hasRecordedToday);
+
+  updateBlob(state);
+
+  if (remaining < 0) {
+    $('#balance-label').textContent = '五月超支';
+    $('#balance-amount').textContent = '-¥' + fmt(Math.abs(remaining));
+    $('#balance-amount').style.color = '#d89098';
+  } else {
+    $('#balance-label').textContent = '五月余额';
+    $('#balance-amount').textContent = '¥' + fmt(remaining);
+    $('#balance-amount').style.color = 'var(--pink-dark)';
+  }
+  const barFill = $('#balance-bar-fill');
+  barFill.style.width = Math.min(100, usageRatio * 100) + '%';
+  if (usageRatio >= 1.0) barFill.style.background = 'linear-gradient(90deg,#e8b0b8,#d89098)';
+  else if (usageRatio >= 0.85) barFill.style.background = 'linear-gradient(90deg,#f0a8be,#db7093)';
+  else barFill.style.background = 'linear-gradient(90deg,var(--pink-light),var(--pink))';
+
+  let hint;
+  if (!hasRecordedToday) hint = '预算 ¥'+fmt(budget)+' · 今天还没记账哦~';
+  else if (usageRatio >= 1.0) hint = '预算 ¥'+fmt(budget)+' · 已经超支了 😭';
+  else if (remaining > budget*0.7) hint = '预算 ¥'+fmt(budget)+' · 还剩好多呢~';
+  else if (remaining > budget*0.15) hint = '预算 ¥'+fmt(budget)+' · 还剩一丢丢~';
+  else hint = '预算 ¥'+fmt(budget)+' · 快用完啦！';
+  $('#balance-hint').textContent = hint;
+
+  const todayTotal = todayTxs.reduce((s,t) => s + t.amount, 0);
+  $('#today-total').textContent = '支出 ¥' + fmt(todayTotal);
+  $('#today-date').textContent = formatDate(today);
+
+  const list = $('#today-list');
+  const empty = $('#empty-today');
+  const hint_ = $('#swipe-hint');
+  if (todayTxs.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    hint_.style.display = 'none';
+  } else {
+    empty.style.display = 'none';
+    hint_.style.display = 'block';
+    list.innerHTML = todayTxs.map(t => `
+      <div class="tx-item" data-id="${t.id}">
+        <span class="tx-emoji">${getCat(t.category).emoji}</span>
+        <span class="tx-note">${h(t.note || getCat(t.category).label)}</span>
+        <span class="tx-amount">-${fmt(t.amount)}</span>
+        <span class="tx-del" data-action="delete" data-id="${t.id}">🗑</span>
+      </div>
+    `).join('');
+  }
+
+  const streak = calcStreak();
+  $('#streak-badge').textContent = '🔥 ' + streak + '天';
+}
+
+function renderStats() {
+  const [year, mon] = statsMonth.split('-').map(Number);
+  const monthTxs = transactions.filter(t => t.date.startsWith(statsMonth));
+  const total = monthTxs.reduce((s,t) => s + t.amount, 0);
+  const count = monthTxs.length;
+  const daysInMonth = new Date(year, mon, 0).getDate();
+  const dailyAvg = count > 0 ? total / daysInMonth : 0;
+
+  $('#stats-month').textContent = year + '年' + mon + '月';
+  $('#stat-total').textContent = '¥' + fmt(total);
+  $('#stat-detail').textContent = count + ' 笔 · 日均 ¥' + fmt(dailyAvg);
+
+  // Compare to prev month
+  const prevMonth = mon === 1 ? (year-1)+'-12' : year+'-'+String(mon-1).padStart(2,'0');
+  const prevTxs = transactions.filter(t => t.date.startsWith(prevMonth));
+  const prevTotal = prevTxs.reduce((s,t) => s + t.amount, 0);
+  let compareHtml = '';
+  if (prevTotal > 0) {
+    const diff = total - prevTotal;
+    const pct = prevTotal > 0 ? Math.round((diff / prevTotal) * 100) : 0;
+    if (diff < 0) compareHtml += '<span style="color:#80a898">📉 比上月 ' + pct + '%</span>';
+    else if (diff > 0) compareHtml += '<span style="color:#d09080">📈 比上月 +' + pct + '%</span>';
+    else compareHtml += '<span>➡ 与上月持平</span>';
+  }
+  const maxTx = monthTxs.length > 0 ? monthTxs.reduce((a,b) => a.amount>b.amount?a:b) : null;
+  if (maxTx) compareHtml += '<span style="color:#d0909a">🔥 最高 ¥'+fmt(maxTx.amount)+'</span>';
+  $('#stat-compare').innerHTML = compareHtml;
+
+  // Category breakdown
+  const catTotals = {};
+  CAT_KEYS.forEach(k => catTotals[k] = 0);
+  monthTxs.forEach(t => catTotals[t.category] = (catTotals[t.category]||0) + t.amount);
+  const activeKeys = CAT_KEYS.filter(k => enabledCats[k] || (catTotals[k]||0) > 0);
+
+  $('#cat-bar').innerHTML = activeKeys.map(k => {
+    const pct = total > 0 ? (catTotals[k]/total)*100 : 0;
+    return `<div class="cat-bar-seg" style="width:${pct}%;background:linear-gradient(90deg,${CATS[k].color},${CATS[k].color}dd)"></div>`;
+  }).join('');
+
+  $('#cat-legend').innerHTML = activeKeys.map(k => {
+    const pct = total > 0 ? Math.round((catTotals[k]/total)*100) : 0;
+    return `<span>${CATS[k].emoji} ${CATS[k].label} ${fmt(catTotals[k])} <span style="color:#a898b8">${pct}%</span></span>`;
+  }).join('');
+
+  // Daily trend
+  const trendContainer = $('#trend-chart');
+  const trendLabels = $('#trend-labels');
+  const today = new Date();
+  const isCurrentMonth = year === today.getFullYear() && mon === today.getMonth()+1;
+  const days = isCurrentMonth ? today.getDate() : daysInMonth;
+  const dailyMap = {};
+  monthTxs.forEach(t => { dailyMap[t.date] = (dailyMap[t.date]||0) + t.amount; });
+  const maxDaily = Math.max(1, ...Object.values(dailyMap));
+
+  let trendBars = '';
+  let trendLabelEls = '';
+  for (let d = 1; d <= days; d++) {
+    const ds = year+'-'+String(mon).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const amt = dailyMap[ds] || 0;
+    const h = Math.max(3, (amt/maxDaily)*100);
+    const isToday = ds === todayStr();
+    trendBars += `<div class="trend-bar${isToday?' today':''}" style="height:${h}%;background:linear-gradient(180deg,${isToday?'var(--pink-light),var(--pink)':'var(--purple-light),var(--purple-light)'})"></div>`;
+    if (d % 5 === 1 || d === days || isToday) trendLabelEls += `<span${isToday?' style="color:var(--pink);font-weight:600"':''}>${d}</span>`;
+    else trendLabelEls += '<span></span>';
+  }
+  trendContainer.innerHTML = trendBars;
+  trendLabels.innerHTML = trendLabelEls;
+
+  // Show/hide
+  const noData = monthTxs.length === 0;
+  $('#cat-card').style.display = noData ? 'none' : '';
+  $('#trend-card').style.display = noData ? 'none' : '';
+  $('#empty-stats').style.display = noData ? 'block' : 'none';
+}
+
+function renderSettings() {
+  const streak = calcStreak();
+  $('#settings-streak').textContent = streak;
+
+  // Week dots
+  const today = new Date();
+  const currentDay = today.getDay(); // 0=Sun
+  const dots = $('#week-dots');
+  const dayLabels = ['日','一','二','三','四','五','六'];
+  // Show current week (Mon-Sun), with today highlighted
+  // Actually, more intuitive: show the last 7 days including today
+  let dotsHtml = '';
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().slice(0,10);
+    const hasRecord = transactions.some(t => t.date === ds);
+    const isToday = i === 0;
+    let cls, label;
+    if (isToday) { cls = 'today'; label = '✨今'; }
+    else if (hasRecord) { cls = 'done'; label = '🌿 ' + dayLabels[d.getDay()]; }
+    else { cls = 'future'; label = '○ ' + dayLabels[d.getDay()]; }
+    dotsHtml += `<span class="week-dot ${cls}">${label}</span>`;
+  }
+  dots.innerHTML = dotsHtml;
+}
+
+function renderTabBar() {
+  $$('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.screen === currentScreen);
+  });
+}
+
+function calcStreak() {
+  const today = new Date();
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().slice(0,10);
+    if (transactions.some(t => t.date === ds)) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function h(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getCat(k) { return CATS[k] || { emoji:'📌', label:k, color:'#e0d8d0' }; }
+
+// ── Actions ──
+async function addTransaction(amount, category, note) {
+  const db = await openDB();
+  const tx = {
+    id: uuid(),
+    amount: parseFloat(amount),
+    category,
+    note: note || '',
+    date: todayStr(),
+    createdAt: Date.now()
+  };
+  await dbPut(db, tx);
+  db.close();
+  transactions.unshift(tx);
+  renderAll();
+  animateBlob();
+  showToast('💡 点亮啦~');
+}
+
+async function deleteTransaction(id) {
+  const db = await openDB();
+  await dbDelete(db, id);
+  db.close();
+  transactions = transactions.filter(t => t.id !== id);
+  renderAll();
+  showToast('已删除');
+}
+
+async function saveBudget(val) {
+  const db = await openDB();
+  await dbPutSettings(db, 'budget', val);
+  db.close();
+  budget = val;
+  renderAll();
+  showToast('预算已更新');
+}
+
+function showToast(msg) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+function animateBlob() {
+  const blob = $('#blob');
+  blob.style.animation = 'none';
+  blob.offsetHeight;
+  blob.style.animation = 'blobBounce 0.4s ease';
+}
+
+// ── Screen Switching ──
+function switchScreen(name) {
+  currentScreen = name;
+  $$('.screen').forEach(s => s.classList.remove('active'));
+  $('#screen-' + name).classList.add('active');
+  renderTabBar();
+  if (name === 'stats') renderStats();
+  if (name === 'settings') renderSettings();
+  if (name === 'home') {
+    $('#input-amount').focus();
+    renderHome();
+  }
+}
+
+// ── Export ──
+function exportCSV() {
+  if (transactions.length === 0) { showToast('还没有数据哦~'); return; }
+  const rows = [['日期','分类','金额','备注']];
+  const sorted = [...transactions].sort((a,b) => a.date.localeCompare(b.date) || b.createdAt - a.createdAt);
+  sorted.forEach(t => {
+    rows.push([t.date, getCat(t.category).label, t.amount.toString(), t.note || '']);
+  });
+  const csv = rows.map(r => r.map(c => '"'+c+'"').join(',')).join('\n');
+  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '小灯记账_'+statsMonth+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('导出成功~');
+}
+
+async function clearAll() {
+  if (!confirm('确定清除所有数据吗？这个操作不可撤销哦 😢')) return;
+  const db = await openDB();
+  const tx = db.transaction('tx','readwrite');
+  tx.objectStore('tx').clear();
+  await new Promise(r => tx.oncomplete = r);
+  db.close();
+  transactions = [];
+  renderAll();
+  showToast('已清除~');
+}
+
+// ── Event Listeners ──
+document.addEventListener('click', e => {
+  // Category select
+  if (e.target.classList.contains('cat-btn')) {
+    $$('.cat-btn').forEach(b => b.classList.remove('selected'));
+    e.target.classList.add('selected');
+    selectedCat = e.target.dataset.cat;
+  }
+
+  // Tab
+  if (e.target.classList.contains('tab-btn')) {
+    switchScreen(e.target.dataset.screen);
+  }
+
+  // Delete button on tx item
+  if (e.target.dataset.action === 'delete') {
+    e.stopPropagation();
+    const id = e.target.dataset.id;
+    const t = transactions.find(tx => tx.id === id);
+    if (t) {
+      pendingDeleteId = id;
+      $('#delete-desc').textContent = getCat(t.category).emoji+' '+ (t.note || getCat(t.category).label) + ' -¥' + fmt(t.amount);
+      $('#delete-overlay').classList.add('show');
+    }
+  }
+});
+
+$('#btn-submit').addEventListener('click', async () => {
+  const amount = $('#input-amount').value.trim();
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+    showToast('请输入金额～');
+    return;
+  }
+  if (parseFloat(amount) > 9999999) {
+    showToast('金额太大啦～');
+    return;
+  }
+  const note = $('#input-note').value.trim();
+  await addTransaction(amount, selectedCat, note);
+  $('#input-amount').value = '';
+  $('#input-note').value = '';
+  $('#input-amount').focus();
+});
+
+// Enter key submits
+$('#input-amount').addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('#btn-submit').click();
+});
+
+// Budget change
+$('#budget-input').addEventListener('change', () => {
+  const val = parseInt($('#budget-input').value);
+  if (val > 0 && val <= 9999999) saveBudget(val);
+  else { $('#budget-input').value = budget; showToast('预算不太对哦~'); }
+});
+
+// Month nav
+$('#prev-month').addEventListener('click', () => {
+  const [y,m] = statsMonth.split('-').map(Number);
+  const d = new Date(y, m-2, 1);
+  statsMonth = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  renderStats();
+});
+$('#next-month').addEventListener('click', () => {
+  const [y,m] = statsMonth.split('-').map(Number);
+  const now = new Date();
+  if (y === now.getFullYear() && m === now.getMonth()+1) return;
+  const d = new Date(y, m, 1);
+  statsMonth = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  renderStats();
+});
+
+// Delete overlay
+$('#delete-cancel').addEventListener('click', () => {
+  $('#delete-overlay').classList.remove('show');
+  pendingDeleteId = null;
+});
+$('#delete-confirm').addEventListener('click', async () => {
+  if (pendingDeleteId) {
+    await deleteTransaction(pendingDeleteId);
+    pendingDeleteId = null;
+  }
+  $('#delete-overlay').classList.remove('show');
+});
+
+// Category management
+let enabledCats = {};
+let customCats = {};
+
+async function loadCatSettings() {
+  const db = await openDB();
+  const tx = db.transaction('settings','readonly');
+  const store = tx.objectStore('settings');
+
+  const req1 = store.get('enabledCats');
+  const req2 = store.get('customCats');
+
+  await new Promise(r => {
+    req1.onsuccess = () => { if (req1.result) enabledCats = req1.result.value; };
+    req2.onsuccess = () => { if (req2.result) customCats = req2.result.value; };
+    tx.oncomplete = r;
+  });
+  db.close();
+
+  // Merge custom cats into CATS
+  CATS = {...DEFAULT_CATS, ...customCats};
+  CAT_KEYS = rebuildCatKeys();
+
+  // Init enabledCats for new keys, ensure builtins always enabled
+  CAT_KEYS.forEach(k => {
+    if (!(k in enabledCats)) enabledCats[k] = true;
+  });
+  Object.keys(DEFAULT_CATS).forEach(k => { enabledCats[k] = true; });
+}
+
+async function saveCatSettings() {
+  const db = await openDB();
+  await dbPutSettings(db, 'enabledCats', {...enabledCats});
+  await dbPutSettings(db, 'customCats', {...customCats});
+  db.close();
+}
+
+function renderCatEditor() {
+  const list = $('#cat-edit-list');
+  const keys = rebuildCatKeys();
+  list.innerHTML = keys.map(k => {
+    const c = CATS[k];
+    const isCustom = !c.builtin;
+    return `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f5eef5;" data-cat="${k}">
+      <input value="${c.emoji}" data-field="emoji" data-cat="${k}"
+        style="width:36px;text-align:center;font-size:18px;background:#fefafe;border:1.5px solid #e8d8f0;border-radius:8px;padding:4px;outline:none;">
+      <input value="${c.label}" data-field="label" data-cat="${k}"
+        style="flex:1;background:#fefafe;border:1.5px solid #e8d8f0;border-radius:8px;padding:6px 8px;color:#785060;font-size:13px;outline:none;">
+      <span style="cursor:pointer;font-size:18px;padding:2px 4px;" data-cat="${k}" data-action="toggle-cat">
+        ${enabledCats[k] ? '✅' : '⬜'}
+      </span>
+      ${isCustom ? `<span style="cursor:pointer;font-size:14px;padding:2px 4px;color:#d09090;" data-cat="${k}" data-action="del-cat">🗑</span>` : '<span style="width:24px;"></span>'}
+    </div>`;
+  }).join('');
+}
+
+async function handleCatFieldChange(catKey, field, value) {
+  if (field === 'emoji') {
+    CATS[catKey].emoji = value || '📌';
+  } else if (field === 'label') {
+    CATS[catKey].label = value || catKey;
+  }
+  if (!CATS[catKey].builtin) {
+    customCats[catKey] = {...CATS[catKey]};
+  }
+  await saveCatSettings();
+}
+
+async function addCustomCat() {
+  const idx = Object.keys(customCats).length;
+  const id = 'custom_' + Date.now();
+  const color = CAT_COLORS[(Object.keys(CATS).length) % CAT_COLORS.length];
+  CATS[id] = { emoji:'📌', label:'新分类', color, builtin:false };
+  customCats[id] = CATS[id];
+  enabledCats[id] = true;
+  CAT_KEYS = rebuildCatKeys();
+  await saveCatSettings();
+  renderCatEditor();
+  renderCatButtons();
+}
+
+async function deleteCustomCat(catKey) {
+  if (CATS[catKey].builtin) return;
+  delete CATS[catKey];
+  delete customCats[catKey];
+  delete enabledCats[catKey];
+  CAT_KEYS = rebuildCatKeys();
+  if (selectedCat === catKey) {
+    selectedCat = CAT_KEYS.find(k => enabledCats[k]) || 'other';
+  }
+  await saveCatSettings();
+  renderCatEditor();
+  renderCatButtons();
+  renderAll();
+}
+
+document.addEventListener('change', async e => {
+  if (e.target.dataset.cat && e.target.dataset.field) {
+    await handleCatFieldChange(e.target.dataset.cat, e.target.dataset.field, e.target.value);
+  }
+});
+
+document.addEventListener('click', async e => {
+  if (e.target.dataset.action === 'toggle-cat') {
+    const k = e.target.dataset.cat;
+    enabledCats[k] = !enabledCats[k];
+    await saveCatSettings();
+    renderCatEditor();
+    renderCatButtons();
+    renderAll();
+  }
+  if (e.target.dataset.action === 'del-cat') {
+    if (confirm('确定删除分类 "'+CATS[e.target.dataset.cat].label+'" 吗？')) {
+      await deleteCustomCat(e.target.dataset.cat);
+    }
+  }
+});
+
+function renderCatButtons() {
+  const container = $('#categories');
+  CAT_KEYS = rebuildCatKeys();
+  container.innerHTML = CAT_KEYS.filter(k => enabledCats[k]).map(k => {
+    const cls = 'cat-btn ' + (CATS[k].color ? '' : k);
+    return `<span class="cat-btn" data-cat="${k}" style="${catBtnStyle(k)}${selectedCat===k?'font-weight:600;background:#fdf0f5;border-color:#f0c8d8;':''}">${CATS[k].emoji} ${CATS[k].label}</span>`;
+  }).join('');
+  if (!enabledCats[selectedCat] || !CATS[selectedCat]) {
+    selectedCat = CAT_KEYS.find(k => enabledCats[k]) || CAT_KEYS[0];
+    renderCatButtons();
+  }
+}
+
+function catBtnStyle(k) {
+  const c = CATS[k];
+  if (!c) return '';
+  return `border:1.5px solid ${c.color}55;color:#785060;`;
+}
+
+$('#cat-add').addEventListener('click', async () => {
+  await addCustomCat();
+});
+
+$('#menu-cats').addEventListener('click', () => {
+  renderCatEditor();
+  $('#cat-overlay').classList.add('show');
+});
+$('#cat-done').addEventListener('click', () => {
+  $('#cat-overlay').classList.remove('show');
+  renderCatButtons();
+  renderAll();
+});
+
+// Settings menus
+$('#menu-export').addEventListener('click', exportCSV);
+$('#menu-clear').addEventListener('click', clearAll);
+$('#menu-about').addEventListener('click', () => {
+  alert('💡 小灯记账 v1.0\n\n一只会发光的小团子\n看你的消费水平变表情\n花多了它就哭，省钱了它就笑\n\n数据只保存在你的手机里 🛡');
+});
+
+// ── PWA Registration ──
+if ('serviceWorker' in navigator) {
+  const swCode = `
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
+      const clone = resp.clone();
+      caches.open('xd-v1').then(c => c.put(e.request, clone));
+      return resp;
+    }))
+  );
+});
+`;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob), {scope:'/'})
+    .catch(() => {});
+}
+
+// ── Init ──
+async function init() {
+  const db = await openDB();
+  transactions = await dbGetAll(db);
+  budget = await dbGetSettings(db);
+  db.close();
+
+  await loadCatSettings();
+  renderCatButtons();
+
+  statsMonth = monthStr(new Date());
+  $('#budget-input').value = budget;
+  $('#today-date').textContent = formatDate(todayStr());
+  renderAll();
+  $('#input-amount').focus();
+
+  // Auto-refresh at midnight
+  const now = new Date();
+  const msToMidnight = new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).getTime() - now.getTime();
+  setTimeout(() => { renderAll(); setInterval(renderAll, 86400000); }, msToMidnight + 1000);
+}
+
+init();
+</script>
+</body>
+</html>
