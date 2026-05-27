@@ -457,6 +457,7 @@ body {
   </div>
 
   <div class="settings-section" style="padding:4px 0">
+    <div class="menu-item" id="menu-sync">🔄 同步数据 <span id="sync-status" style="font-size:10px;color:#a898b8;"></span></div>
     <div class="menu-item" id="menu-cats">📋 分类管理</div>
     <div class="menu-item" id="menu-export">📤 导出数据 CSV</div>
     <div class="menu-item" id="menu-clear">🗑 清除所有数据</div>
@@ -832,6 +833,7 @@ async function deleteTransaction(id) {
   transactions = transactions.filter(t => t.id !== id);
   renderAll();
   showToast('已删除');
+  syncData(false);
 }
 
 async function saveBudget(val) {
@@ -968,6 +970,7 @@ async function addTransactionOnDate(amount, category, note, date) {
   renderAll();
   animateBlob();
   showToast('💡 点亮啦~');
+  syncData(false);
 }
 
 // Update date display when date changes
@@ -1158,6 +1161,97 @@ $('#cat-add').addEventListener('click', async () => {
   await addCustomCat();
 });
 
+// ── GitHub Sync ──
+const SYNC_REPO = 'fionapia/xiaodeng';
+const SYNC_FILE = 'data.json';
+let syncToken = '';
+let lastSyncSha = null;
+let syncBusy = false;
+
+async function loadSyncToken() {
+  const db = await openDB();
+  const tx = db.transaction('settings','readonly');
+  const req = tx.objectStore('settings').get('githubToken');
+  await new Promise(r => { req.onsuccess = () => { if (req.result) syncToken = req.result.value; }; tx.oncomplete = r; });
+  db.close();
+}
+
+async function saveSyncToken(token) {
+  syncToken = token;
+  const db = await openDB();
+  await dbPutSettings(db, 'githubToken', token);
+  db.close();
+}
+
+async function githubAPI(method, path, body) {
+  const url = `https://api.github.com/repos/${SYNC_REPO}/contents/${path}`;
+  const headers = { Authorization: `Bearer ${syncToken}`, Accept: 'application/vnd.github+json' };
+  const opts = { method, headers };
+  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const resp = await fetch(url, opts);
+  if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+  return resp.json();
+}
+
+async function syncData(showToast_ = true) {
+  if (!syncToken || syncBusy) return;
+  syncBusy = true;
+  $('#sync-status').textContent = '⏳';
+  try {
+    // Fetch remote data
+    let remoteData = [];
+    let sha = null;
+    try {
+      const resp = await githubAPI('GET', SYNC_FILE);
+      const raw = atob(resp.content);
+      remoteData = JSON.parse(raw);
+      sha = resp.sha;
+    } catch(e) {
+      // File doesn't exist yet, that's ok
+    }
+
+    // Merge: union by id, latest createdAt wins
+    const merged = {};
+    for (let t of transactions) merged[t.id] = t;
+    for (let t of remoteData) {
+      if (!merged[t.id] || t.createdAt > merged[t.id].createdAt) merged[t.id] = t;
+    }
+    const mergedList = Object.values(merged).sort((a,b) => b.createdAt - a.createdAt);
+
+    // Push merged data
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(mergedList))));
+    await githubAPI('PUT', SYNC_FILE, {
+      message: '小灯记账 · 同步',
+      content,
+      sha
+    });
+
+    // Update local
+    transactions = mergedList;
+    const db = await openDB();
+    const tx = db.transaction('tx','readwrite');
+    const store = tx.objectStore('tx');
+    store.clear();
+    for (let t of mergedList) store.put(t);
+    await new Promise(r => tx.oncomplete = r);
+    db.close();
+
+    lastSyncSha = sha;
+    $('#sync-status').textContent = '✅ ' + new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    renderAll();
+    if (showToast_) showToast('同步完成~');
+  } catch(e) {
+    $('#sync-status').textContent = '❌';
+    if (showToast_) showToast('同步失败：' + e.message);
+  }
+  syncBusy = false;
+}
+
+$('#menu-sync').addEventListener('click', () => syncData(true));
+
+// Auto-sync every 30 seconds
+setInterval(() => syncData(false), 30000);
+
 $('#menu-cats').addEventListener('click', () => {
   renderCatEditor();
   $('#cat-overlay').classList.add('show');
@@ -1203,6 +1297,8 @@ async function init() {
   db.close();
 
   await loadCatSettings();
+  await loadSyncToken();
+  if (!syncToken) await saveSyncToken('[REDACTED]');
   renderCatButtons();
 
   statsMonth = monthStr(new Date());
@@ -1212,6 +1308,8 @@ async function init() {
   $('#input-date').value = todayStr();
   $('#date-display').textContent = formatDate(todayStr());
   $('#input-amount').focus();
+
+  syncData(false);
 
   // Auto-refresh at midnight
   const now = new Date();
