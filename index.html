@@ -543,6 +543,7 @@ let budget = DEFAULT_BUDGET;
 let transactions = [];
 let statsMonth = ''; // YYYY-MM
 let pendingDeleteId = null;
+let deletedIds = [];
 
 // ── DOM refs ──
 const $ = (s) => document.querySelector(s);
@@ -843,8 +844,10 @@ function getCat(k) { return CATS[k] || { emoji:'📌', label:k, color:'#e0d8d0' 
 
 // ── Actions ──
 async function deleteTransaction(id) {
+  deletedIds.push(id);
   const db = await openDB();
   await dbDelete(db, id);
+  await dbPutSettings(db, 'deletedIds', deletedIds);
   db.close();
   transactions = transactions.filter(t => t.id !== id);
   renderAll();
@@ -914,11 +917,14 @@ async function clearAll() {
   const db = await openDB();
   const tx = db.transaction('tx','readwrite');
   tx.objectStore('tx').clear();
+  await dbPutSettings(db, 'deletedIds', []);
   await new Promise(r => tx.oncomplete = r);
   db.close();
   transactions = [];
+  deletedIds = [];
   renderAll();
   showToast('已清除~');
+  syncData(false);
 }
 
 // ── Event Listeners ──
@@ -1261,6 +1267,14 @@ async function loadSyncToken() {
   db.close();
 }
 
+async function loadDeletedIds() {
+  const db = await openDB();
+  const tx = db.transaction('settings','readonly');
+  const req = tx.objectStore('settings').get('deletedIds');
+  await new Promise(r => { req.onsuccess = () => { if (req.result) deletedIds = req.result.value || []; }; tx.oncomplete = r; });
+  db.close();
+}
+
 async function saveSyncToken(token) {
   syncToken = token;
   const db = await openDB();
@@ -1284,27 +1298,46 @@ async function syncData(showToast_ = true) {
   $('#sync-status').textContent = '⏳';
   try {
     // Fetch remote data
-    let remoteData = [];
+    let remoteTxs = [];
+    let remoteDeleted = [];
     let sha = null;
     try {
       const resp = await githubAPI('GET', SYNC_FILE);
       const raw = decodeURIComponent(escape(atob(resp.content)));
-      remoteData = JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      // Support legacy format (array only) and new format {tx, deleted}
+      if (Array.isArray(parsed)) {
+        remoteTxs = parsed;
+      } else {
+        remoteTxs = parsed.tx || [];
+        remoteDeleted = parsed.deleted || [];
+      }
       sha = resp.sha;
     } catch(e) {
       // File doesn't exist yet, that's ok
     }
 
+    // Merge deletedIds: union of local + remote
+    const allDeleted = [...new Set([...deletedIds, ...remoteDeleted])];
+
+    // Filter out deleted records from remote
+    remoteTxs = remoteTxs.filter(t => !allDeleted.includes(t.id));
+
     // Merge: union by id, latest createdAt wins
     const merged = {};
     for (let t of transactions) merged[t.id] = t;
-    for (let t of remoteData) {
+    for (let t of remoteTxs) {
       if (!merged[t.id] || t.createdAt > merged[t.id].createdAt) merged[t.id] = t;
     }
     const mergedList = Object.values(merged).sort((a,b) => b.createdAt - a.createdAt);
 
+    // Clean up deletedIds: only keep IDs that are still in remote's deleted list
+    // or were just added locally (haven't been synced yet)
+    const newDeleted = allDeleted.filter(id => !merged[id]);
+
     // Push merged data
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(mergedList))));
+    const payload = JSON.stringify({ tx: mergedList, deleted: newDeleted });
+    const content = btoa(unescape(encodeURIComponent(payload)));
     await githubAPI('PUT', SYNC_FILE, {
       message: '小灯记账 · 同步',
       content,
@@ -1313,11 +1346,13 @@ async function syncData(showToast_ = true) {
 
     // Update local
     transactions = mergedList;
+    deletedIds = newDeleted;
     const db = await openDB();
     const tx = db.transaction('tx','readwrite');
     const store = tx.objectStore('tx');
     store.clear();
     for (let t of mergedList) store.put(t);
+    await dbPutSettings(db, 'deletedIds', deletedIds);
     await new Promise(r => tx.oncomplete = r);
     db.close();
 
@@ -1343,8 +1378,8 @@ $('#menu-token').addEventListener('click', () => {
   }
 });
 
-// Auto-sync every 30 seconds (temporarily disabled for cleanup)
-// setInterval(() => syncData(false), 30000);
+// Auto-sync every 30 seconds
+setInterval(() => syncData(false), 30000);
 
 $('#menu-cats').addEventListener('click', () => {
   renderCatEditor();
@@ -1392,6 +1427,7 @@ async function init() {
 
   await loadCatSettings();
   await loadSyncToken();
+  await loadDeletedIds();
   renderCatButtons();
 
   statsMonth = monthStr(new Date());
