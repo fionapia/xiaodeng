@@ -1407,7 +1407,7 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
       const clone = resp.clone();
-      caches.open('xd-v1').then(c => c.put(e.request, clone));
+      caches.open('xd-v2').then(c => c.put(e.request, clone));
       return resp;
     }))
   );
