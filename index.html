@@ -458,6 +458,7 @@ body {
 
   <div class="settings-section" style="padding:4px 0">
     <div class="menu-item" id="menu-sync">🔄 同步数据 <span id="sync-status" style="font-size:10px;color:#a898b8;"></span></div>
+    <div class="menu-item" id="menu-token" style="font-size:10px;color:#c0b0b8;">🔑 设置GitHub Token</div>
     <div class="menu-item" id="menu-cats">📋 分类管理</div>
     <div class="menu-item" id="menu-export">📤 导出数据 CSV</div>
     <div class="menu-item" id="menu-clear">🗑 清除所有数据</div>
@@ -1249,6 +1250,15 @@ async function syncData(showToast_ = true) {
 
 $('#menu-sync').addEventListener('click', () => syncData(true));
 
+$('#menu-token').addEventListener('click', () => {
+  const token = prompt('请输入GitHub Personal Access Token：\n\n（需开启 Contents 读写权限）', syncToken || '');
+  if (token && token.startsWith('github_pat_')) {
+    saveSyncToken(token).then(() => { showToast('Token已保存~'); syncData(true); });
+  } else if (token) {
+    showToast('Token格式不对哦～');
+  }
+});
+
 // Auto-sync every 30 seconds
 setInterval(() => syncData(false), 30000);
 
@@ -1298,7 +1308,6 @@ async function init() {
 
   await loadCatSettings();
   await loadSyncToken();
-  if (!syncToken) await saveSyncToken('[REDACTED]');
   renderCatButtons();
 
   statsMonth = monthStr(new Date());
