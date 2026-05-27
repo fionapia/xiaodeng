@@ -489,6 +489,21 @@ body {
   </div>
 </div>
 
+<!-- EDIT OVERLAY -->
+<div class="overlay" id="edit-overlay">
+  <div class="overlay-sheet">
+    <div class="overlay-title">✏️ 修改记录</div>
+    <div class="categories" id="edit-categories" style="margin-bottom:8px;"></div>
+    <input class="input-amount" id="edit-amount" type="number" placeholder="金额" inputmode="decimal">
+    <input class="input-note" id="edit-note" placeholder="备注" maxlength="30" style="margin-bottom:8px;">
+    <input class="input-date" id="edit-date" type="date" style="margin-bottom:8px;">
+    <div class="overlay-actions">
+      <button class="btn-cancel" id="edit-cancel">取消</button>
+      <button class="btn-submit" id="edit-save" style="flex:1;box-shadow:none;">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- CATEGORY EDITOR -->
 <div class="overlay" id="cat-overlay">
   <div class="overlay-sheet">
@@ -689,7 +704,7 @@ function renderHome() {
     empty.style.display = 'none';
     hint_.style.display = 'block';
     list.innerHTML = todayTxs.map(t => `
-      <div class="tx-item" data-id="${t.id}">
+      <div class="tx-item" data-id="${t.id}" data-action="edit-tx">
         <span class="tx-emoji">${getCat(t.category).emoji}</span>
         <span class="tx-note">${h(t.note || getCat(t.category).label)}</span>
         <span class="tx-amount">-${fmt(t.amount)}</span>
@@ -1018,6 +1033,75 @@ $('#delete-confirm').addEventListener('click', async () => {
     pendingDeleteId = null;
   }
   $('#delete-overlay').classList.remove('show');
+});
+
+// Edit transaction
+let editingId = null;
+
+function openEditOverlay(id) {
+  const t = transactions.find(tx => tx.id === id);
+  if (!t) return;
+  editingId = id;
+  $('#edit-amount').value = t.amount;
+  $('#edit-note').value = t.note || '';
+  $('#edit-date').value = t.date;
+  renderEditCategories(t.category);
+  $('#edit-overlay').classList.add('show');
+}
+
+function renderEditCategories(activeCat) {
+  CAT_KEYS = rebuildCatKeys();
+  const cats = CAT_KEYS.filter(k => enabledCats[k]);
+  $('#edit-categories').innerHTML = cats.map(k => `
+    <span class="cat-btn ${k === activeCat ? 'selected' : ''}" data-cat="${k}" data-ecat="1"
+      style="${catBtnStyle(k)}${k===activeCat?'font-weight:600;background:#fdf0f5;border-color:#f0c8d8;':''}">${CATS[k].emoji} ${CATS[k].label}</span>
+  `).join('');
+}
+
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-action="edit-tx"]') && !e.target.closest('[data-action="delete"]')) {
+    const id = e.target.closest('[data-action="edit-tx"]').dataset.id;
+    openEditOverlay(id);
+  }
+  // Edit category select
+  if (e.target.dataset.ecat === '1') {
+    document.querySelectorAll('#edit-categories .cat-btn').forEach(b => b.classList.remove('selected'));
+    e.target.classList.add('selected');
+  }
+});
+
+$('#edit-cancel').addEventListener('click', () => {
+  $('#edit-overlay').classList.remove('show');
+  editingId = null;
+});
+
+$('#edit-save').addEventListener('click', async () => {
+  if (!editingId) return;
+  const amount = $('#edit-amount').value.trim();
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) { showToast('金额不对哦～'); return; }
+  const cat = document.querySelector('#edit-categories .cat-btn.selected')?.dataset.cat || 'other';
+  const note = $('#edit-note').value.trim();
+  const date = $('#edit-date').value || todayStr();
+
+  const db = await openDB();
+  const t = transactions.find(tx => tx.id === editingId);
+  if (t) {
+    t.amount = parseFloat(amount);
+    t.category = cat;
+    t.note = note;
+    t.date = date;
+    t.updatedAt = Date.now();
+    await dbPut(db, t);
+  }
+  db.close();
+  transactions = transactions.filter(tx => tx.id !== editingId);
+  if (t) transactions.unshift(t);
+  transactions.sort((a,b) => b.createdAt - a.createdAt);
+  $('#edit-overlay').classList.remove('show');
+  editingId = null;
+  renderAll();
+  showToast('修改好啦～');
+  syncData(false);
 });
 
 // Category management
