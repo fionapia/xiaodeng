@@ -1288,7 +1288,7 @@ async function syncData(showToast_ = true) {
     let sha = null;
     try {
       const resp = await githubAPI('GET', SYNC_FILE);
-      const raw = atob(resp.content);
+      const raw = decodeURIComponent(escape(atob(resp.content)));
       remoteData = JSON.parse(raw);
       sha = resp.sha;
     } catch(e) {
