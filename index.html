@@ -917,8 +917,8 @@ async function clearAll() {
   const db = await openDB();
   const tx = db.transaction('tx','readwrite');
   tx.objectStore('tx').clear();
-  await dbPutSettings(db, 'deletedIds', []);
   await new Promise(r => tx.oncomplete = r);
+  await dbPutSettings(db, 'deletedIds', []);
   db.close();
   transactions = [];
   deletedIds = [];
@@ -1323,11 +1323,13 @@ async function syncData(showToast_ = true) {
     // Filter out deleted records from remote
     remoteTxs = remoteTxs.filter(t => !allDeleted.includes(t.id));
 
-    // Merge: union by id, latest createdAt wins
+    // Merge: union by id, latest (updatedAt or createdAt) wins
     const merged = {};
     for (let t of transactions) merged[t.id] = t;
     for (let t of remoteTxs) {
-      if (!merged[t.id] || t.createdAt > merged[t.id].createdAt) merged[t.id] = t;
+      const localTime = merged[t.id] ? Math.max(merged[t.id].updatedAt || 0, merged[t.id].createdAt || 0) : 0;
+      const remoteTime = Math.max(t.updatedAt || 0, t.createdAt || 0);
+      if (!merged[t.id] || remoteTime > localTime) merged[t.id] = t;
     }
     const mergedList = Object.values(merged).sort((a,b) => b.createdAt - a.createdAt);
 
@@ -1352,11 +1354,9 @@ async function syncData(showToast_ = true) {
     const store = tx.objectStore('tx');
     store.clear();
     for (let t of mergedList) store.put(t);
-    await dbPutSettings(db, 'deletedIds', deletedIds);
     await new Promise(r => tx.oncomplete = r);
+    await dbPutSettings(db, 'deletedIds', deletedIds);
     db.close();
-
-    lastSyncSha = sha;
     $('#sync-status').textContent = '✅ ' + new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
     renderAll();
     if (showToast_) showToast('同步完成~');
