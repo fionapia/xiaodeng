@@ -7,8 +7,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="小灯记账">
 <meta name="theme-color" content="#fff3f8">
-<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2">
+<link rel="apple-touch-icon" sizes="152x152" href="icon.png?v=2">
+<link rel="apple-touch-icon" sizes="120x120" href="icon.png?v=2">
+<link rel="apple-touch-icon-precomposed" href="icon.png?v=2">
+<link rel="icon" href="icon.png?v=2">
 <title>小灯记账</title>
 <style>
 :root {
@@ -1401,7 +1404,7 @@ $('#menu-about').addEventListener('click', () => {
 // ── PWA Registration ──
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'xd-v3';
+const CACHE = 'xd-v4';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil(
