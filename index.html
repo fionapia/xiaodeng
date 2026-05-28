@@ -5,39 +5,32 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="塔菲记账">
-<meta name="theme-color" content="#FFB0C0">
-<link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3">
-<link rel="apple-touch-icon" sizes="152x152" href="icon.png?v=3">
-<link rel="apple-touch-icon" sizes="120x120" href="icon.png?v=3">
-<link rel="apple-touch-icon-precomposed" href="icon.png?v=3">
-<link rel="icon" href="icon.png?v=3">
-<title>塔菲记账</title>
+<meta name="apple-mobile-web-app-title" content="小灯记账">
+<meta name="theme-color" content="#fff3f8">
+<link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2">
+<link rel="apple-touch-icon" sizes="152x152" href="icon.png?v=2">
+<link rel="apple-touch-icon" sizes="120x120" href="icon.png?v=2">
+<link rel="apple-touch-icon-precomposed" href="icon.png?v=2">
+<link rel="icon" href="icon.png?v=2">
+<title>小灯记账</title>
 <style>
 :root {
-  --bg: #FFF5F8;
+  --bg: #fff3f8;
   --card: #ffffff;
-  --pink: #FF85A2;
-  --pink-dark: #E86A88;
-  --pink-light: #FFB8C9;
-  --purple: #F5C542;
-  --purple-dark: #D4A530;
-  --purple-light: #FFF3C4;
-  --text: #5C3D50;
-  --text-secondary: #B08898;
-  --text-muted: #D0A0B0;
-  --border: #FAD5DD;
-  --green: #80C8A8;
-  --orange: #E8A080;
-  --shadow: 0 2px 12px rgba(255,133,162,0.10);
-  --shadow-sm: 0 1px 4px rgba(255,133,162,0.06);
-  --taffy-gold: #F5C542;
-  --taffy-gold-dark: #D4A530;
-  --taffy-gold-light: #FFF3C4;
-  --taffy-paw-pink: #FFB0C0;
-  --taffy-ear-pink: #FFD1DC;
-  --taffy-whisker: #D0A0B0;
-  --taffy-pink-pale: #FFE4EC;
+  --pink: #db7093;
+  --pink-dark: #c9708a;
+  --pink-light: #f0a8be;
+  --purple: #9880c0;
+  --purple-dark: #8068b0;
+  --purple-light: #d8c8e8;
+  --text: #785060;
+  --text-secondary: #b898a8;
+  --text-muted: #c8b0b8;
+  --border: #f0d4de;
+  --green: #80a898;
+  --orange: #d09080;
+  --shadow: 0 2px 12px rgba(200,140,170,0.07);
+  --shadow-sm: 0 1px 4px rgba(200,140,170,0.04);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -60,113 +53,108 @@ body {
   display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;
 }
 .header-title { font-weight:700; font-size:18px; color:var(--pink-dark); display:flex; align-items:center; gap:6px; }
-/* Logo: cat ears + bell */
-.logo-cat { position:relative; display:inline-block; width:28px; height:26px; flex-shrink:0; }
-.logo-ear { position:absolute; top:0; width:0; height:0; border-left:9px solid transparent; border-right:9px solid transparent; border-bottom:14px solid var(--pink); transition: transform 0.3s ease; }
-.logo-ear.left { left:1px; transform:rotate(-10deg); transform-origin:bottom center; }
-.logo-ear.right { right:1px; transform:rotate(10deg); transform-origin:bottom center; }
-.logo-ear-inner { position:absolute; top:3px; left:-5px; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:8px solid var(--taffy-ear-pink); }
-.logo-head { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:18px; height:16px; background:var(--pink); border-radius:50%; }
-.logo-bell { position:absolute; bottom:-1px; left:50%; transform:translateX(-50%); width:6px; height:6px; border-radius:50%; background:var(--taffy-gold); box-shadow:0 0 3px rgba(245,197,66,0.4); }
-.logo-bell-clapper { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:2px; height:2px; border-radius:50%; background:var(--taffy-gold-dark); }
-@keyframes earWiggle { 0%,100%{transform:rotate(var(--ear-rotate,-10deg))} 25%{transform:rotate(calc(var(--ear-rotate,-10deg) - 8deg))} 75%{transform:rotate(calc(var(--ear-rotate,-10deg) + 8deg))} }
-.logo-ear.wiggle { animation:earWiggle 0.4s ease 1; }
-
+.logo-lamp { position:relative; display:inline-block; width:22px; height:24px; flex-shrink:0; }
+.logo-bulb {
+  position:absolute; bottom:4px; left:50%; transform:translateX(-50%);
+  width:14px; height:13px; background:linear-gradient(180deg,#ffd0dd,#ffb6c8);
+  border-radius:12px 12px 4px 4px;
+}
+.logo-base {
+  position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+  width:10px; height:5px; background:#c9708a; border-radius:2px 2px 4px 4px;
+}
+.logo-flame {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:5px; height:7px; background:linear-gradient(180deg,#fff8d0,#ffd700);
+  border-radius:3px; box-shadow:0 0 6px rgba(255,215,0,0.5);
+}
 .streak-badge {
-  background:var(--taffy-pink-pale); color:var(--pink-dark); padding:4px 12px; border-radius:14px;
+  background:#f5e5f0; color:var(--pink-dark); padding:4px 12px; border-radius:14px;
   font-size:11px; font-weight:600;
 }
 
 .card {
-  background:var(--card); border-radius:20px; padding:16px;
+  background:var(--card); border-radius:18px; padding:16px;
   box-shadow:var(--shadow); margin-bottom:10px;
 }
 
-/* Cat Mascot */
-.cat-wrap { text-align:center; padding:4px 0 8px; position:relative; }
-.cat { display:inline-block; width:70px; height:62px; position:relative; vertical-align:top; }
-.cat-ear { position:absolute; top:-8px; z-index:2; width:0; height:0; border-left:13px solid transparent; border-right:13px solid transparent; border-bottom:20px solid var(--pink-light); transition:border-bottom-color 0.5s; }
-.cat-ear.left { left:3px; transform:rotate(-6deg); }
-.cat-ear.right { right:3px; transform:rotate(6deg); }
-.cat-ear-inner { position:absolute; top:5px; left:-7px; width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:10px solid var(--taffy-ear-pink); transition:border-bottom-color 0.5s; }
-.cat-face { position:relative; width:56px; height:56px; border-radius:50%; margin:0 auto; background:linear-gradient(135deg,var(--pink-light),var(--pink)); transition:background 0.5s,box-shadow 0.5s; }
-.cat-eyes { position:absolute; top:14px; width:100%; display:flex; justify-content:center; gap:18px; }
-.cat-eye { width:6px; height:6px; border-radius:50%; background:#4A3A44; transition:all 0.3s; }
-.cat-mouth { position:absolute; top:26px; left:50%; transform:translateX(-50%); transition:all 0.3s; }
-.cat-whisker-l { position:absolute; width:16px; height:1px; background:var(--taffy-whisker); border-radius:1px; top:24px; left:-8px; transform:rotate(-8deg); }
-.cat-whisker-l2 { position:absolute; width:16px; height:1px; background:var(--taffy-whisker); border-radius:1px; top:30px; left:-10px; transform:rotate(2deg); }
-.cat-whisker-r { position:absolute; width:16px; height:1px; background:var(--taffy-whisker); border-radius:1px; top:24px; right:-8px; transform:rotate(8deg); }
-.cat-whisker-r2 { position:absolute; width:16px; height:1px; background:var(--taffy-whisker); border-radius:1px; top:30px; right:-10px; transform:rotate(-2deg); }
-.cat-blush-l { position:absolute; width:6px; height:4px; border-radius:50%; opacity:0.6; bottom:12px; left:8px; }
-.cat-blush-r { position:absolute; width:6px; height:4px; border-radius:50%; opacity:0.6; bottom:12px; right:8px; }
-.cat-bell { position:absolute; bottom:-3px; left:50%; transform:translateX(-50%); width:10px; height:10px; border-radius:50%; background:var(--taffy-gold); box-shadow:0 0 6px rgba(245,197,66,0.35); z-index:3; transition:transform 0.3s; }
-.cat-bell-line { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); width:2px; height:3px; background:var(--taffy-gold-dark); border-radius:1px; }
-.cat-sparkle { position:absolute; top:-8px; right:4px; font-size:14px; z-index:4; }
+/* Blob */
+.blob-wrap { text-align:center; padding:4px 0 8px; position:relative; }
+.blob {
+  display:inline-block; width:60px; height:60px; border-radius:50%;
+  transition: background 0.5s, box-shadow 0.5s;
+  position:relative; vertical-align:top;
+}
+.blob-eyes { position:absolute; top:14px; width:100%; display:flex; justify-content:center; gap:20px; }
+.blob-eye {
+  width:6px; height:6px; border-radius:50%; transition: all 0.3s;
+}
+.blob-mouth {
+  position:absolute; top:24px; left:50%; transform:translateX(-50%);
+  transition: all 0.3s;
+}
+.blob-blush-l { position:absolute; bottom:14px; left:10px; width:5px; height:5px; border-radius:50%; }
+.blob-blush-r { position:absolute; bottom:12px; right:12px; width:4px; height:4px; border-radius:50%; }
+.blob-sparkle { position:absolute; top:-8px; right:0; font-size:14px; }
 
-/* Cat states */
-.cat.state-sleepy .cat-face { background:linear-gradient(135deg,#E8E0F0,#DED6E8); box-shadow:0 0 16px rgba(200,180,200,0.3); }
-.cat.state-sleepy .cat-ear { border-bottom-color:#D8D0E0; }
-.cat.state-sleepy .cat-ear-inner { border-bottom-color:#E8E0F0; }
-.cat.state-sleepy .cat-eye { width:5px; height:10px; background:#C0B8C8; border-radius:3px; }
-.cat.state-sleepy .cat-mouth { width:8px; height:8px; background:#C8C0D0; border-radius:50%; }
-.cat.state-sleepy .cat-whisker-l,.cat.state-sleepy .cat-whisker-l2,.cat.state-sleepy .cat-whisker-r,.cat.state-sleepy .cat-whisker-r2 { opacity:0.3; }
-.cat.state-sleepy .cat-blush-l,.cat.state-sleepy .cat-blush-r { display:none; }
+/* Blob states */
+.blob.state-sleepy { background:linear-gradient(135deg,#e8e0f0,#e0d8e8); box-shadow:0 0 16px rgba(200,180,200,0.3); }
+.blob.state-sleepy .blob-eye { width:5px; height:10px; background:#c0b8c8; border-radius:3px; }
+.blob.state-sleepy .blob-mouth { width:8px; height:8px; background:#c8c0d0; border-radius:50%; }
+.blob.state-sleepy .blob-blush-l,.blob.state-sleepy .blob-blush-r { display:none; }
 
-.cat.state-great .cat-face { background:linear-gradient(135deg,#D0F0E0,#C0E8D8); box-shadow:0 0 28px rgba(160,220,180,0.5),0 0 52px rgba(160,220,180,0.2); }
-.cat.state-great .cat-ear { border-bottom-color:#C0E8D0; }
-.cat.state-great .cat-ear-inner { border-bottom-color:#D8F0E0; }
-.cat.state-great .cat-eye { width:7px; height:7px; background:#4A8A6A; }
-.cat.state-great .cat-mouth { width:14px; height:7px; background:#4A8A6A; border-radius:0 0 7px 7px; }
-.cat.state-great .cat-blush-l { background:#B0E0C0; }
-.cat.state-great .cat-blush-r { background:#B0E0C0; }
+.blob.state-great { background:linear-gradient(135deg,#d0f0e0,#c0e8d8); box-shadow:0 0 28px rgba(160,220,180,0.5),0 0 52px rgba(160,220,180,0.2); }
+.blob.state-great .blob-eye { width:6px; height:6px; background:#4a8a6a; }
+.blob.state-great .blob-mouth { width:14px; height:7px; background:#4a8a6a; border-radius:0 0 7px 7px; }
+.blob.state-great .blob-blush-l { background:#b0e0c0; }
+.blob.state-great .blob-blush-r { background:#b0e0c0; }
 
-.cat.state-good .cat-face { background:linear-gradient(135deg,var(--pink-light),var(--pink)); box-shadow:0 0 28px rgba(255,133,162,0.35),0 0 52px rgba(255,133,162,0.12); }
-.cat.state-good .cat-ear { border-bottom-color:var(--pink-light); }
-.cat.state-good .cat-ear-inner { border-bottom-color:var(--taffy-ear-pink); }
-.cat.state-good .cat-eye { width:6px; height:6px; background:#4A3A44; }
-.cat.state-good .cat-mouth { width:14px; height:9px; background:#4A3A44; border-radius:7px; opacity:0.7; }
-.cat.state-good .cat-blush-l { background:var(--pink-light); }
-.cat.state-good .cat-blush-r { background:var(--pink-light); }
+.blob.state-good { background:linear-gradient(135deg,#f5d0e8,#e8c0f0,#d8c8f0); box-shadow:0 0 28px rgba(220,160,220,0.5),0 0 52px rgba(220,160,220,0.2); }
+.blob.state-good .blob-eye { width:6px; height:6px; background:#fff; }
+.blob.state-good .blob-mouth { width:14px; height:9px; background:#fff; border-radius:7px; opacity:0.8; }
+.blob.state-good .blob-blush-l { background:#d8a0d8; }
+.blob.state-good .blob-blush-r { background:#d8a0d8; }
 
-.cat.state-warn .cat-face { background:linear-gradient(135deg,#F8E0C8,#F0D0B0,#E8C8A8); box-shadow:0 0 28px rgba(240,200,160,0.5); }
-.cat.state-warn .cat-ear { border-bottom-color:#F0D0B0; }
-.cat.state-warn .cat-ear-inner { border-bottom-color:#F8E0C8; }
-.cat.state-warn .cat-eye { width:6px; height:6px; background:#8A6A4A; }
-.cat.state-warn .cat-mouth { width:8px; height:8px; background:#8A6A4A; border-radius:50%; }
-.cat.state-warn .cat-blush-l { background:#E8C0A0; }
-.cat.state-warn .cat-blush-r { background:#E8C0A0; }
+.blob.state-warn { background:linear-gradient(135deg,#f8e0c8,#f0d0b0,#e8c8a8); box-shadow:0 0 28px rgba(240,200,160,0.5); }
+.blob.state-warn .blob-eye { width:6px; height:6px; background:#8a6a4a; }
+.blob.state-warn .blob-mouth { width:8px; height:8px; background:#8a6a4a; border-radius:50%; }
+.blob.state-warn .blob-blush-l { background:#e8c0a0; }
+.blob.state-warn .blob-blush-r { background:#e8c0a0; }
 
-.cat.state-over .cat-face { background:linear-gradient(135deg,#F0C0C8,#E8B0B8,#D8A8B0); box-shadow:0 0 24px rgba(220,160,160,0.4); }
-.cat.state-over .cat-ear { border-bottom-color:#E0B0B8; }
-.cat.state-over .cat-ear-inner { border-bottom-color:#F0C8D0; }
-.cat.state-over .cat-eye { width:7px; height:7px; background:#6A4A4A; }
-.cat.state-over .cat-mouth { width:10px; height:6px; background:#D8A0A0; border-radius:0 0 5px 5px; }
-.cat.state-over .cat-blush-l { background:#E0B0B0; }
-.cat.state-over .cat-blush-r { background:#E0B0B0; }
-.cat.state-over .cat-eyes::after { content:''; position:absolute; top:-2px; left:13px; width:6px; height:6px; background:#B8D8F0; border-radius:50%; }
-.cat.state-over .cat-eyes::before { content:''; position:absolute; top:-2px; right:13px; width:6px; height:6px; background:#B8D8F0; border-radius:50%; }
+.blob.state-over { background:linear-gradient(135deg,#f0c0c8,#e8b0b8,#d8a8b0); box-shadow:0 0 24px rgba(220,160,160,0.4); }
+.blob.state-over .blob-eye { width:7px; height:7px; background:#fff; position:relative; }
+.blob.state-over .blob-mouth { width:10px; height:6px; background:#e8b0b0; border-radius:0 0 5px 5px; }
+.blob.state-over .blob-blush-l { background:#e0b0b0; }
+.blob.state-over .blob-blush-r { background:#e0b0b0; }
 
-.cat.state-broke .cat-face { background:linear-gradient(135deg,#E8B0B8,#D89098,#C87880); box-shadow:0 0 18px rgba(200,120,130,0.4); }
-.cat.state-broke .cat-ear { border-bottom-color:#D89098; }
-.cat.state-broke .cat-ear-inner { border-bottom-color:#E8B0B8; }
-.cat.state-broke .cat-eye { width:6px; height:6px; background:#5A3A3A; transform:rotate(15deg); }
-.cat.state-broke .cat-mouth { width:10px; height:6px; background:#C08080; border-radius:2px 2px 5px 5px; }
-.cat.state-broke .cat-blush-l { background:#D89090; }
-.cat.state-broke .cat-blush-r { background:#D89090; }
-.cat.state-broke .cat-whisker-l,.cat.state-broke .cat-whisker-l2,.cat.state-broke .cat-whisker-r,.cat.state-broke .cat-whisker-r2 { opacity:0.25; }
-.cat.state-broke { animation:catShiver 0.3s infinite; }
+.blob.state-over .blob-eyes::after {
+  content:''; position:absolute; top:2px; left:15px; width:6px; height:6px;
+  background:#b8d8f0; border-radius:50%;
+}
+.blob.state-over .blob-eyes::before {
+  content:''; position:absolute; top:2px; right:15px; width:6px; height:6px;
+  background:#b8d8f0; border-radius:50%;
+}
 
-@keyframes catShiver { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-1.5px) rotate(-1deg)} 75%{transform:translateX(1.5px) rotate(1deg)} }
-@keyframes catBounce { 0%,100%{transform:scale(1)} 30%{transform:scale(1.10)} 60%{transform:scale(0.96)} }
-@keyframes bellJingle { 0%,100%{transform:translateX(-50%) rotate(0deg)} 25%{transform:translateX(-50%) rotate(-12deg)} 75%{transform:translateX(-50%) rotate(12deg)} }
-.cat.bell-jingle .cat-bell { animation:bellJingle 0.5s ease 1; }
+.blob.state-broke { background:linear-gradient(135deg,#e8b0b8,#d89098,#c87880); box-shadow:0 0 18px rgba(200,120,130,0.4); animation:shiver 0.3s infinite; }
+.blob.state-broke .blob-eye { width:6px; height:6px; background:#fff; transform:rotate(15deg); }
+.blob.state-broke .blob-mouth { width:10px; height:6px; background:#c08080; border-radius:2px 2px 5px 5px; }
+.blob.state-broke .blob-blush-l { background:#d89090; }
+.blob.state-broke .blob-blush-r { background:#d89090; }
+@keyframes shiver { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-1.5px)} 75%{transform:translateX(1.5px)} }
+
+@keyframes blobBounce {
+  0%,100% { transform:scale(1); }
+  30% { transform:scale(1.12); }
+  60% { transform:scale(0.95); }
+}
 
 /* Balance area */
 .balance-label { font-size:11px; color:var(--text-secondary); }
 .balance-amount { font-size:32px; font-weight:800; color:var(--pink-dark); margin:2px 0; }
 .balance-hint { font-size:10px; color:var(--text-secondary); }
 .balance-bar {
-  height:6px; background:var(--taffy-pink-pale); border-radius:4px; margin-top:8px; overflow:hidden;
+  height:6px; background:#f0dde5; border-radius:3px; margin-top:8px; overflow:hidden;
 }
 .balance-bar-fill {
   height:100%; background:linear-gradient(90deg,var(--pink-light),var(--pink));
@@ -178,20 +166,20 @@ body {
   display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px; justify-content:center;
 }
 .cat-btn {
-  padding:7px 12px; border-radius:16px; font-size:11px; border:1.5px solid transparent;
-  background:var(--card); cursor:pointer; transition:all 0.15s; white-space:nowrap;
+  padding:6px 10px; border-radius:12px; font-size:11px; border:1.5px solid transparent;
+  background:#fefafe; cursor:pointer; transition:all 0.15s; white-space:nowrap;
 }
-.cat-btn.selected { font-weight:600; background:var(--taffy-pink-pale); }
-.cat-btn.food { border-color:var(--pink-light); color:var(--pink-dark); }
-.cat-btn.food.selected { background:var(--taffy-pink-pale); border-color:var(--pink); }
-.cat-btn.transport { border-color:#D0D8F0; color:#6A70A0; }
-.cat-btn.transport.selected { background:#F4F5FF; }
-.cat-btn.shopping { border-color:var(--pink-light); color:var(--pink-dark); }
-.cat-btn.shopping.selected { background:var(--taffy-pink-pale); }
-.cat-btn.play { border-color:#C0E8D0; color:var(--green); }
-.cat-btn.play.selected { background:#F0FDF5; }
-.cat-btn.other { border-color:#E0D8D0; color:#A09088; }
-.cat-btn.other.selected { background:#F8F5F0; }
+.cat-btn.selected { font-weight:600; }
+.cat-btn.food { border-color:#f0c8d8; color:var(--pink-dark); }
+.cat-btn.food.selected { background:#fdf0f5; }
+.cat-btn.transport { border-color:#e8d8f0; color:var(--purple); }
+.cat-btn.transport.selected { background:#fdf5ff; }
+.cat-btn.shopping { border-color:#f0ccd4; color:#d0909a; }
+.cat-btn.shopping.selected { background:#fdf0f2; }
+.cat-btn.play { border-color:#d0e8d8; color:var(--green); }
+.cat-btn.play.selected { background:#f4fdf8; }
+.cat-btn.other { border-color:#e8e0d8; color:#b0a098; }
+.cat-btn.other.selected { background:#f8f5f0; }
 
 .input-amount {
   width:100%; background:#fefafc; border:1.5px solid var(--border);
@@ -222,9 +210,9 @@ body {
 .input-amount::placeholder { color:var(--text-muted); }
 .btn-submit {
   width:100%; background:linear-gradient(135deg,var(--pink-light),var(--pink));
-  border:none; border-radius:18px; padding:14px; color:#fff; font-size:16px;
-  font-weight:700; box-shadow:0 4px 16px rgba(255,133,162,0.30); cursor:pointer;
-  font-family:inherit; transition:transform 0.1s; letter-spacing:1px;
+  border:none; border-radius:14px; padding:14px; color:#fff; font-size:15px;
+  font-weight:700; box-shadow:0 3px 12px rgba(219,112,147,0.25); cursor:pointer;
+  font-family:inherit; transition:transform 0.1s;
 }
 .btn-submit:active { transform:scale(0.97); }
 
@@ -293,15 +281,18 @@ body {
 /* Tab bar */
 .tab-bar {
   position:fixed; bottom:0; left:0; right:0; max-width:420px; margin:0 auto;
-  display:flex; gap:8px; justify-content:center; padding:8px 16px calc(8px + env(safe-area-inset-bottom, 0));
-  background:rgba(255,245,248,0.92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-  z-index:10; border-top:1px solid var(--border);
+  display:flex; gap:10px; justify-content:center; padding:10px 16px calc(10px + env(safe-area-inset-bottom, 0));
+  background:linear-gradient(0deg, var(--bg) 60%, transparent);
+  z-index:10;
 }
 .tab-btn {
-  padding:8px 22px; border-radius:20px; font-size:12px; cursor:pointer;
-  transition:all 0.2s; color:var(--text-secondary); position:relative;
+  padding:6px 20px; border-radius:16px; font-size:11px; cursor:pointer;
+  transition:all 0.15s; color:var(--text-secondary);
 }
-.tab-btn.active { color:#fff; font-weight:600; background:var(--pink); box-shadow:0 2px 8px rgba(255,133,162,0.25); }
+.tab-btn.active { color:#fff; font-weight:600; }
+.tab-btn[data-screen="home"].active { background:var(--pink); }
+.tab-btn[data-screen="stats"].active { background:var(--purple-dark); }
+.tab-btn[data-screen="settings"].active { background:#b0a090; }
 
 /* Delete confirm overlay */
 .overlay {
@@ -354,42 +345,32 @@ body {
 <div class="screen active" id="screen-home">
   <div class="header">
     <span class="header-title">
-      <span class="logo-cat">
-        <span class="logo-ear left"><span class="logo-ear-inner"></span></span>
-        <span class="logo-ear right"><span class="logo-ear-inner"></span></span>
-        <span class="logo-head"></span>
-        <span class="logo-bell"><span class="logo-bell-clapper"></span></span>
+      <span class="logo-lamp">
+        <span class="logo-flame"></span>
+        <span class="logo-bulb"></span>
+        <span class="logo-base"></span>
       </span>
-      塔菲记账
+      小灯记账
     </span>
     <span class="streak-badge" id="streak-badge">🔥 0天</span>
   </div>
 
   <div class="card" style="text-align:center">
-    <div class="cat-wrap">
-      <div class="cat state-good" id="blob">
-        <span class="cat-ear left"><span class="cat-ear-inner"></span></span>
-        <span class="cat-ear right"><span class="cat-ear-inner"></span></span>
-        <div class="cat-face">
-          <div class="cat-eyes">
-            <div class="cat-eye"></div>
-            <div class="cat-eye"></div>
-          </div>
-          <div class="cat-mouth"></div>
-          <div class="cat-whisker-l"></div>
-          <div class="cat-whisker-l2"></div>
-          <div class="cat-whisker-r"></div>
-          <div class="cat-whisker-r2"></div>
-          <div class="cat-blush-l"></div>
-          <div class="cat-blush-r"></div>
+    <div class="blob-wrap">
+      <div class="blob state-good" id="blob">
+        <div class="blob-eyes">
+          <div class="blob-eye"></div>
+          <div class="blob-eye"></div>
         </div>
-        <div class="cat-bell"><div class="cat-bell-line"></div></div>
+        <div class="blob-mouth"></div>
+        <div class="blob-blush-l"></div>
+        <div class="blob-blush-r"></div>
       </div>
-      <div class="cat-sparkle" id="blob-sparkle">✨</div>
+      <div class="blob-sparkle" id="blob-sparkle">✨</div>
     </div>
     <div class="balance-label" id="balance-label">五月余额</div>
     <div class="balance-amount" id="balance-amount">¥5,000</div>
-    <div class="balance-hint" id="balance-hint">预算 ¥5,000 · 今天还没记账呢~ 喵</div>
+    <div class="balance-hint" id="balance-hint">预算 ¥5,000 · 今天还没记账哦~</div>
     <div class="balance-bar"><div class="balance-bar-fill" id="balance-bar-fill" style="width:0%"></div></div>
   </div>
 
@@ -399,15 +380,15 @@ body {
       <input class="input-date" id="input-date" type="date">
     </div>
     <div class="categories" id="categories">
-      <span class="cat-btn food selected" data-cat="food">🐟 吃吃</span>
+      <span class="cat-btn food selected" data-cat="food">🍜 吃吃</span>
       <span class="cat-btn transport" data-cat="transport">🚗 出行</span>
-      <span class="cat-btn shopping" data-cat="shopping">🎀 买买</span>
+      <span class="cat-btn shopping" data-cat="shopping">🛍 买买</span>
       <span class="cat-btn play" data-cat="play">🎮 玩玩</span>
-      <span class="cat-btn other" data-cat="other">🥛 其他</span>
+      <span class="cat-btn other" data-cat="other">📦 其他</span>
     </div>
     <input class="input-amount" id="input-amount" type="number" placeholder="花了多少呀～" inputmode="decimal" autofocus>
     <input class="input-note" id="input-note" placeholder="记点什么..." maxlength="30" style="margin-bottom:8px;">
-    <button class="btn-submit" id="btn-submit">🐾 喵~ 记账</button>
+    <button class="btn-submit" id="btn-submit">💡 点亮</button>
   </div>
 
   <div class="today-header">
@@ -418,7 +399,7 @@ body {
   <div class="tx-swipe-hint" id="swipe-hint" style="display:none">← 左滑删除 · 点击编辑 →</div>
   <div class="empty-state" id="empty-today">
     <div class="empty-icon">🌸</div>
-    <div class="empty-text">今天还没记账喵~<br/>记一笔让塔菲开心起来吧 🐾</div>
+    <div class="empty-text">今天还没记账~<br/>记一笔让小灯亮起来吧</div>
   </div>
 </div>
 
@@ -451,26 +432,20 @@ body {
 
   <div class="empty-state" id="empty-stats" style="display:none">
     <div class="empty-icon">📊</div>
-    <div class="empty-text">这个月还没有记录喵~ 🐱</div>
+    <div class="empty-text">这个月还没有记录</div>
   </div>
 </div>
 
 <!-- SCREEN: SETTINGS -->
 <div class="screen" id="screen-settings">
   <div class="setting-blob-wrap">
-    <div class="cat state-good" style="width:70px;height:62px;margin:0 auto 8px;">
-      <span class="cat-ear left" style="border-bottom-color:var(--pink-light);"><span class="cat-ear-inner" style="border-bottom-color:var(--taffy-ear-pink);"></span></span>
-      <span class="cat-ear right" style="border-bottom-color:var(--pink-light);"><span class="cat-ear-inner" style="border-bottom-color:var(--taffy-ear-pink);"></span></span>
-      <div class="cat-face" style="width:56px;height:56px;margin:0 auto;background:linear-gradient(135deg,var(--pink-light),var(--pink));">
-        <div class="cat-eyes" style="top:14px;gap:18px;"><div class="cat-eye" style="width:7px;height:7px;background:#fff;"></div><div class="cat-eye" style="width:7px;height:7px;background:#fff;"></div></div>
-        <div class="cat-mouth" style="width:14px;height:9px;background:#fff;border-radius:7px;opacity:0.8;top:26px;"></div>
-        <div class="cat-whisker-l"></div><div class="cat-whisker-l2"></div><div class="cat-whisker-r"></div><div class="cat-whisker-r2"></div>
-        <div class="cat-blush-l" style="bottom:12px;left:8px;width:6px;height:4px;background:var(--pink-light);"></div>
-        <div class="cat-blush-r" style="bottom:12px;right:8px;width:6px;height:4px;background:var(--pink-light);"></div>
-      </div>
-      <div class="cat-bell" style="width:10px;height:10px;background:var(--taffy-gold);"><div class="cat-bell-line"></div></div>
+    <div class="blob state-good" style="width:64px;height:64px;margin:0 auto 8px;">
+      <div class="blob-eyes" style="top:16px"><div class="blob-eye" style="width:7px;height:7px;background:#fff"></div><div class="blob-eye" style="width:7px;height:7px;background:#fff"></div></div>
+      <div class="blob-mouth" style="top:28px;width:16px;height:12px;background:#fff;border-radius:8px;"></div>
+      <div class="blob-blush-l" style="bottom:16px;left:12px;width:6px;height:6px;background:#d8a0d8;"></div>
+      <div class="blob-blush-r" style="bottom:14px;right:14px;width:5px;height:5px;background:#d8a0d8;"></div>
     </div>
-    <div style="font-size:12px;color:var(--pink-dark);font-weight:600;">塔菲陪你记账喵~ 💕</div>
+    <div style="font-size:12px;color:var(--pink-dark);font-weight:600;">小灯陪你记账</div>
     <div class="streak-num" id="settings-streak">0</div>
     <div class="streak-label">连续打卡天数 🔥</div>
     <div class="week-dots" id="week-dots"></div>
@@ -490,25 +465,25 @@ body {
     <div class="menu-item" id="menu-cats">📋 分类管理</div>
     <div class="menu-item" id="menu-export">📤 导出数据 CSV</div>
     <div class="menu-item" id="menu-clear">🗑 清除所有数据</div>
-    <div class="menu-item" id="menu-about">ℹ️ 关于塔菲记账</div>
+    <div class="menu-item" id="menu-about">ℹ️ 关于小灯记账</div>
   </div>
 
-  <div class="version-info">v2.0 塔菲喵~ · 数据仅保存在你的手机里 🛡</div>
+  <div class="version-info">v1.0 · 数据仅保存在你的手机里 🛡</div>
 </div>
 
 </div>
 
 <!-- TAB BAR -->
 <div class="tab-bar">
-  <span class="tab-btn active" data-screen="home">🐾 记账</span>
+  <span class="tab-btn active" data-screen="home">💰 记账</span>
   <span class="tab-btn" data-screen="stats">📊 统计</span>
-  <span class="tab-btn" data-screen="settings">🎀 设置</span>
+  <span class="tab-btn" data-screen="settings">⚙️ 设置</span>
 </div>
 
 <!-- DELETE CONFIRM -->
 <div class="overlay" id="delete-overlay">
   <div class="overlay-sheet">
-    <div class="overlay-title">确定删除这条记录喵？</div>
+    <div class="overlay-title">确定删除这条记录吗？</div>
     <div class="overlay-sub" id="delete-desc"></div>
     <div class="overlay-actions">
       <button class="btn-cancel" id="delete-cancel">取消</button>
@@ -551,11 +526,11 @@ body {
 
 // ── Constants ──
 const DEFAULT_CATS = {
-  food:   { emoji:'🐟', label:'吃吃', color:'#FFD6E0', builtin:true },
-  transport:{ emoji:'🚗', label:'出行', color:'#D0D8F0', builtin:true },
-  shopping:{ emoji:'🎀', label:'买买', color:'#FFD6E0', builtin:true },
-  play:   { emoji:'🎮', label:'玩玩', color:'#C0E8D0', builtin:true },
-  other:  { emoji:'🥛', label:'其他', color:'#E0D8D0', builtin:true },
+  food:   { emoji:'🍜', label:'吃吃', color:'#e8c0d8', builtin:true },
+  transport:{ emoji:'🚗', label:'出行', color:'#c0c8f0', builtin:true },
+  shopping:{ emoji:'🛍', label:'买买', color:'#e8c0d0', builtin:true },
+  play:   { emoji:'🎮', label:'玩玩', color:'#c0e8d0', builtin:true },
+  other:  { emoji:'📦', label:'其他', color:'#e0d8d0', builtin:true },
 };
 const CAT_COLORS = ['#e8c0d8','#c0c8f0','#e8c0d0','#c0e8d0','#d8c8e8','#f0d8c0','#c8d8e8','#e8d8c8','#d0c8e0','#e0d0d8'];
 
@@ -665,13 +640,13 @@ function getBlobState(usageRatio, hasRecordedToday) {
   return 'broke';
 }
 
-const blobLabels = { sleepy:'还没记账呢～喵😴', great:'今天好省！塔菲开心🌟', good:'一切正常喵～✨', warn:'注意预算了喵😟', over:'快超支了喵💧', broke:'已经超了呜喵😭' };
+const blobLabels = { sleepy:'还没记账 😴', great:'今天好省！🌟', good:'一切正常 ✨', warn:'注意预算 😟', over:'快超支了 💧', broke:'已经超了 😭' };
 const blobsParkles = { sleepy:'💤', great:'🌟', good:'✨', warn:'😟', over:'💧', broke:'😭' };
 
 function updateBlob(state) {
   const blob = $('#blob');
   const sparkle = $('#blob-sparkle');
-  blob.className = 'cat state-' + state;
+  blob.className = 'blob state-' + state;
   sparkle.textContent = blobsParkles[state];
 }
 
@@ -711,11 +686,11 @@ function renderHome() {
   else barFill.style.background = 'linear-gradient(90deg,var(--pink-light),var(--pink))';
 
   let hint;
-  if (!hasRecordedToday) hint = '预算 ¥'+fmt(budget)+' · 今天还没记账呢~ 喵';
-  else if (usageRatio >= 1.0) hint = '预算 ¥'+fmt(budget)+' · 已经超支了呜喵 😭';
-  else if (remaining > budget*0.7) hint = '预算 ¥'+fmt(budget)+' · 还剩好多鱼干呢~ 🐟';
-  else if (remaining > budget*0.15) hint = '预算 ¥'+fmt(budget)+' · 还剩一丢丢了喵...';
-  else hint = '预算 ¥'+fmt(budget)+' · 快用完啦！要省着点喵！';
+  if (!hasRecordedToday) hint = '预算 ¥'+fmt(budget)+' · 今天还没记账哦~';
+  else if (usageRatio >= 1.0) hint = '预算 ¥'+fmt(budget)+' · 已经超支了 😭';
+  else if (remaining > budget*0.7) hint = '预算 ¥'+fmt(budget)+' · 还剩好多呢~';
+  else if (remaining > budget*0.15) hint = '预算 ¥'+fmt(budget)+' · 还剩一丢丢~';
+  else hint = '预算 ¥'+fmt(budget)+' · 快用完啦！';
   $('#balance-hint').textContent = hint;
 
   const todayTotal = todayTxs.reduce((s,t) => s + t.amount, 0);
@@ -743,7 +718,7 @@ function renderHome() {
   }
 
   const streak = calcStreak();
-  $('#streak-badge').textContent = '🔥 ' + streak + '天 喵~';
+  $('#streak-badge').textContent = '🔥 ' + streak + '天';
 }
 
 function renderStats() {
@@ -879,7 +854,7 @@ async function deleteTransaction(id) {
   db.close();
   transactions = transactions.filter(t => t.id !== id);
   renderAll();
-  showToast('删掉了喵~ 🐾');
+  showToast('已删除');
   syncData(false);
 }
 
@@ -889,7 +864,7 @@ async function saveBudget(val) {
   db.close();
   budget = val;
   renderAll();
-  showToast('预算更新啦～喵~');
+  showToast('预算已更新');
 }
 
 function showToast(msg) {
@@ -901,12 +876,10 @@ function showToast(msg) {
 }
 
 function animateBlob() {
-  const cat = $('#blob');
-  cat.style.animation = 'none';
-  cat.offsetHeight;
-  cat.style.animation = 'catBounce 0.4s ease';
-  cat.classList.add('bell-jingle');
-  setTimeout(() => cat.classList.remove('bell-jingle'), 500);
+  const blob = $('#blob');
+  blob.style.animation = 'none';
+  blob.offsetHeight;
+  blob.style.animation = 'blobBounce 0.4s ease';
 }
 
 // ── Screen Switching ──
@@ -936,10 +909,10 @@ function exportCSV() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = '塔菲记账_'+statsMonth+'.csv';
+  a.download = '小灯记账_'+statsMonth+'.csv';
   a.click();
   URL.revokeObjectURL(url);
-  showToast('导出成功喵~ 🐾');
+  showToast('导出成功~');
 }
 
 async function clearAll() {
@@ -953,7 +926,7 @@ async function clearAll() {
   transactions = [];
   deletedIds = [];
   renderAll();
-  showToast('已清除喵~ 🐾');
+  showToast('已清除~');
   syncData(false);
 }
 
@@ -990,11 +963,11 @@ $('#input-date').value = todayStr();
 $('#btn-submit').addEventListener('click', async () => {
   const amount = $('#input-amount').value.trim();
   if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-    showToast('喵？金额呢～');
+    showToast('请输入金额～');
     return;
   }
   if (parseFloat(amount) > 9999999) {
-    showToast('金额太大啦喵！');
+    showToast('金额太大啦～');
     return;
   }
   const note = $('#input-note').value.trim();
@@ -1021,7 +994,7 @@ async function addTransactionOnDate(amount, category, note, date) {
   transactions.unshift(tx);
   renderAll();
   animateBlob();
-  showToast('🐾 记好啦~ 喵~');
+  showToast('💡 点亮啦~');
   syncData(false);
 }
 
@@ -1039,7 +1012,7 @@ $('#input-amount').addEventListener('keydown', e => {
 $('#budget-input').addEventListener('change', () => {
   const val = parseInt($('#budget-input').value);
   if (val > 0 && val <= 9999999) saveBudget(val);
-  else { $('#budget-input').value = budget; showToast('预算不太对哦喵~'); }
+  else { $('#budget-input').value = budget; showToast('预算不太对哦~'); }
 });
 
 // Month nav
@@ -1114,7 +1087,7 @@ $('#edit-cancel').addEventListener('click', () => {
 $('#edit-save').addEventListener('click', async () => {
   if (!editingId) return;
   const amount = $('#edit-amount').value.trim();
-  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) { showToast('金额不对哦喵～'); return; }
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) { showToast('金额不对哦～'); return; }
   const cat = document.querySelector('#edit-categories .cat-btn.selected')?.dataset.cat || 'other';
   const note = $('#edit-note').value.trim();
   const date = $('#edit-date').value || todayStr();
@@ -1136,7 +1109,7 @@ $('#edit-save').addEventListener('click', async () => {
   $('#edit-overlay').classList.remove('show');
   editingId = null;
   renderAll();
-  showToast('修改好啦喵～');
+  showToast('修改好啦～');
   syncData(false);
 });
 
@@ -1389,10 +1362,10 @@ async function syncData(showToast_ = true) {
     db.close();
     $('#sync-status').textContent = '✅ ' + new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
     renderAll();
-    if (showToast_) showToast('同步完成喵~');
+    if (showToast_) showToast('同步完成~');
   } catch(e) {
     $('#sync-status').textContent = '❌';
-    if (showToast_) showToast('同步失败喵：' + e.message);
+    if (showToast_) showToast('同步失败：' + e.message);
   }
   syncBusy = false;
 }
@@ -1402,9 +1375,9 @@ $('#menu-sync').addEventListener('click', () => syncData(true));
 $('#menu-token').addEventListener('click', () => {
   const token = prompt('请输入GitHub Personal Access Token：\n\n（需开启 Contents 读写权限）', syncToken || '');
   if (token && token.startsWith('github_pat_')) {
-    saveSyncToken(token).then(() => { showToast('Token已保存喵~'); syncData(true); });
+    saveSyncToken(token).then(() => { showToast('Token已保存~'); syncData(true); });
   } else if (token) {
-    showToast('Token格式不对哦喵～');
+    showToast('Token格式不对哦～');
   }
 });
 
@@ -1425,7 +1398,7 @@ $('#cat-done').addEventListener('click', () => {
 $('#menu-export').addEventListener('click', exportCSV);
 $('#menu-clear').addEventListener('click', clearAll);
 $('#menu-about').addEventListener('click', () => {
-  alert('🐱 塔菲记账 v2.0\n\n一只会记账的猫娘塔菲~♪\n看你的消费水平变表情\n花多了她就哭哭，省钱了就蹭蹭\n\n数据只保存在你的手机里哦～ 喵 🛡');
+  alert('💡 小灯记账 v1.0\n\n一只会发光的小团子\n看你的消费水平变表情\n花多了它就哭，省钱了它就笑\n\n数据只保存在你的手机里 🛡');
 });
 
 // ── PWA Registration ──
